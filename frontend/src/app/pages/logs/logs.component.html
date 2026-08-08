@@ -1,0 +1,46 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Historique</p>
+    <h1>Logs</h1>
+  </div>
+  <p class="muted">{{ total() }} entrée(s)</p>
+</header>
+
+@if (error()) {
+  <p class="banner error">{{ error() }}</p>
+}
+
+<section class="panel">
+  @if (loading()) {
+    <p class="muted">Chargement…</p>
+  } @else if (logs().length === 0) {
+    <p class="muted">Aucun déclenchement enregistré.</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Heure</th>
+            <th>Salon</th>
+            <th>Utilisateur</th>
+            <th>Motif</th>
+            <th>Trigger</th>
+            <th>Réponse</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of logs(); track log.id) {
+            <tr>
+              <td>{{ log.executedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+              <td>#{{ log.channelName || log.channelId }}</td>
+              <td>{{ log.username }}</td>
+              <td><code>{{ log.matchedPattern }}</code></td>
+              <td>{{ log.triggerName }}</td>
+              <td class="response">{{ log.responseContent }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

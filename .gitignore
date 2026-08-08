@@ -20,7 +20,7 @@ Thumbs.db
 
 # Logs & artefacts locaux
 *.log
-logs/
+/logs/
 _deploy/
 _deploy.tgz
 *.tgz
