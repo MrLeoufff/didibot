@@ -1,0 +1,16 @@
+.actions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a:hover {
+  color: color-mix(in srgb, var(--accent-strong) 80%, black);
+}

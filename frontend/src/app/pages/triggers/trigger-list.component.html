@@ -1,0 +1,61 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Règles</p>
+    <h1>Triggers</h1>
+  </div>
+  <a class="btn" routerLink="/triggers/new">Ajouter</a>
+</header>
+
+@if (error()) {
+  <p class="banner error">{{ error() }}</p>
+}
+
+@if (loading()) {
+  <p class="muted">Chargement…</p>
+} @else if (triggers().length === 0) {
+  <section class="panel">
+    <p class="muted">Aucun trigger. Crée-en un pour commencer.</p>
+  </section>
+} @else {
+  <section class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Déclencheur</th>
+            <th>Type</th>
+            <th>Cooldown</th>
+            <th>État</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (trigger of triggers(); track trigger.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/triggers', trigger.id]">{{ trigger.name }}</a>
+              </td>
+              <td><code>{{ trigger.pattern }}</code></td>
+              <td>{{ trigger.type }}</td>
+              <td>{{ trigger.cooldownSeconds }} s</td>
+              <td>
+                <span class="badge" [class.on]="trigger.enabled" [class.off]="!trigger.enabled">
+                  {{ trigger.enabled ? 'Actif' : 'Inactif' }}
+                </span>
+              </td>
+              <td class="actions">
+                <button type="button" class="btn ghost" (click)="toggle(trigger)">
+                  {{ trigger.enabled ? 'Désactiver' : 'Activer' }}
+                </button>
+                <button type="button" class="btn danger ghost" (click)="remove(trigger)">
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

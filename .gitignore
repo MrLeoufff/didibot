@@ -1,0 +1,29 @@
+# Environnement / secrets
+.env
+.env.*
+!.env.example
+
+# Build
+backend/target/
+frontend/dist/
+frontend/node_modules/
+frontend/.angular/
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs & artefacts locaux
+*.log
+logs/
+_deploy/
+_deploy.tgz
+*.tgz
+
+# Maven wrapper local
+.mvn/wrapper/maven-wrapper.jar

@@ -1,0 +1,5 @@
+# Usage local : docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+services:
+  frontend:
+    ports:
+      - "${APP_PORT:-8088}:80"

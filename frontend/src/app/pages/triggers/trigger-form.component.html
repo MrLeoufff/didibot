@@ -1,0 +1,92 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">{{ editId ? 'Edition' : 'Création' }}</p>
+    <h1>{{ editId ? 'Modifier le trigger' : 'Nouveau trigger' }}</h1>
+  </div>
+  <a class="btn ghost" routerLink="/triggers">Retour</a>
+</header>
+
+@if (error()) {
+  <p class="banner error">{{ error() }}</p>
+}
+
+<form class="panel form" [formGroup]="form" (ngSubmit)="submit()">
+  <label>
+    Nom
+    <input formControlName="name" placeholder="Troll C#" />
+  </label>
+
+  <label>
+    Déclencheur
+    <input formControlName="pattern" placeholder="C#" />
+  </label>
+
+  <div class="row">
+    <label>
+      Type
+      <select formControlName="type">
+        @for (type of types; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Cooldown (secondes)
+      <input type="number" min="0" formControlName="cooldownSeconds" />
+    </label>
+  </div>
+
+  <div class="row">
+    <label>
+      Serveur
+      <select formControlName="discordServerId">
+        <option [ngValue]="null">Serveur par défaut / fallback</option>
+        @for (server of servers(); track server.id) {
+          <option [ngValue]="server.id">{{ server.name }} ({{ server.discordGuildId }})</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Scope salons
+      <select formControlName="channelScope">
+        <option value="ALL">Tous</option>
+        <option value="INCLUDE">Uniquement certains</option>
+        <option value="EXCLUDE">Tous sauf</option>
+      </select>
+    </label>
+  </div>
+
+  <label>
+    IDs de salons (séparés par des virgules)
+    <input formControlName="channelIdsText" placeholder="123..., 456..." />
+  </label>
+
+  <label class="checkbox">
+    <input type="checkbox" formControlName="enabled" />
+    Actif
+  </label>
+
+  <div class="responses" formArrayName="responses">
+    <div class="panel-head">
+      <h2>Réponses</h2>
+      <button type="button" class="btn ghost" (click)="addResponse()">+ Ajouter une réponse</button>
+    </div>
+
+    @for (control of responses.controls; track $index; let i = $index) {
+      <div class="response-row">
+        <textarea [formControlName]="i" rows="2" placeholder="Texte de réponse..."></textarea>
+        <button type="button" class="btn danger ghost" (click)="removeResponse(i)" [disabled]="responses.length === 1">
+          Retirer
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="form-actions">
+    <button class="btn" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+    </button>
+  </div>
+</form>

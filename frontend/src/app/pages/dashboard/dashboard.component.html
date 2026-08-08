@@ -1,0 +1,70 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Vue d’ensemble</p>
+    <h1>Dashboard</h1>
+  </div>
+  <a class="btn" routerLink="/triggers/new">Nouveau trigger</a>
+</header>
+
+@if (error()) {
+  <p class="banner error">{{ error() }}</p>
+}
+
+@if (loading()) {
+  <p class="muted">Chargement…</p>
+} @else {
+  <section class="stats">
+    <article>
+      <p>Déclencheurs actifs</p>
+      <strong>{{ activeTriggers() }}</strong>
+    </article>
+    <article>
+      <p>Réponses récentes</p>
+      <strong>{{ recentLogs().length }}</strong>
+    </article>
+    <article>
+      <p>Serveurs</p>
+      <strong>{{ serverCount() }}</strong>
+    </article>
+    <article>
+      <p>Discord</p>
+      <strong [class.ok]="health()?.discordConnected" [class.ko]="!health()?.discordConnected">
+        {{ health()?.discordConnected ? 'Connecté' : 'Hors ligne' }}
+      </strong>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Derniers déclenchements</h2>
+      <a routerLink="/logs">Voir tout</a>
+    </div>
+
+    @if (recentLogs().length === 0) {
+      <p class="muted">Aucun log pour le moment. Envoie un message Discord pour tester.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Heure</th>
+              <th>Salon</th>
+              <th>Utilisateur</th>
+              <th>Trigger</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of recentLogs(); track log.id) {
+              <tr>
+                <td>{{ log.executedAt | date: 'HH:mm:ss' }}</td>
+                <td>#{{ log.channelName || log.channelId }}</td>
+                <td>{{ log.username }}</td>
+                <td>{{ log.triggerName }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+}

@@ -1,0 +1,58 @@
+services:
+  database:
+    image: postgres:17
+    container_name: didibot-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-discord_bot}
+      POSTGRES_USER: ${POSTGRES_USER:-discord}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-discord_secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-discord} -d ${POSTGRES_DB:-discord_bot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - didibot-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: didibot-backend
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/${POSTGRES_DB:-discord_bot}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discord}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-discord_secret}
+    expose:
+      - "8080"
+    restart: unless-stopped
+    networks:
+      - didibot-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: didibot-frontend
+    depends_on:
+      - backend
+    expose:
+      - "80"
+    restart: unless-stopped
+    networks:
+      - didibot-net
+
+volumes:
+  postgres_data:
+
+networks:
+  didibot-net:
+    driver: bridge

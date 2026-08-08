@@ -1,0 +1,66 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Discord</p>
+    <h1>Serveurs</h1>
+  </div>
+</header>
+
+@if (error()) {
+  <p class="banner error">{{ error() }}</p>
+}
+
+<section class="panel form-panel">
+  <h2>Ajouter un serveur</h2>
+  <form [formGroup]="form" (ngSubmit)="create()">
+    <label>
+      Nom
+      <input formControlName="name" placeholder="Mon serveur" />
+    </label>
+    <label>
+      Guild ID
+      <input formControlName="discordGuildId" placeholder="123456789012345678" />
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" formControlName="enabled" />
+      Actif
+    </label>
+    <button class="btn" type="submit">Enregistrer</button>
+  </form>
+</section>
+
+<section class="panel">
+  @if (loading()) {
+    <p class="muted">Chargement…</p>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Guild ID</th>
+            <th>État</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (server of servers(); track server.id) {
+            <tr>
+              <td>{{ server.name }}</td>
+              <td><code>{{ server.discordGuildId }}</code></td>
+              <td>
+                <span class="badge" [class.on]="server.enabled" [class.off]="!server.enabled">
+                  {{ server.enabled ? 'Actif' : 'Inactif' }}
+                </span>
+              </td>
+              <td class="actions">
+                <button type="button" class="btn ghost" (click)="toggle(server)">
+                  {{ server.enabled ? 'Désactiver' : 'Activer' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

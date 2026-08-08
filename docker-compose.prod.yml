@@ -1,0 +1,10 @@
+# Usage serveur : docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  frontend:
+    networks:
+      - didibot-net
+      - web
+
+networks:
+  web:
+    external: true
