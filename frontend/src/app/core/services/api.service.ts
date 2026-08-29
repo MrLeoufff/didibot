@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   AppUser,
+  BotStats,
   DiscordServer,
   DiscordServerRequest,
   HealthStatus,
@@ -22,6 +23,14 @@ export class ApiService {
 
   getHealth(): Observable<HealthStatus> {
     return this.http.get<HealthStatus>(`${this.base}/health`);
+  }
+
+  getStats(guildId?: string): Observable<BotStats> {
+    let params = new HttpParams();
+    if (guildId) {
+      params = params.set('guildId', guildId);
+    }
+    return this.http.get<BotStats>(`${this.base}/stats`, { params });
   }
 
   register(payload: RegisterRequest): Observable<AppUser> {

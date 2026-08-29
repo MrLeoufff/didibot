@@ -9,8 +9,12 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
@@ -106,29 +110,65 @@ public class DiscordBot {
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .setChunkingFilter(ChunkingFilter.NONE)
                 .setActivity(Activity.playing("Java > C#"))
-                .addEventListeners(discordMessageListener, discordSlashCommandListener)
+                .addEventListeners(
+                        discordMessageListener,
+                        discordSlashCommandListener,
+                        guildJoinListener()
+                )
                 .build()
                 .awaitReady();
 
-        jda.updateCommands().addCommands(
-                Commands.slash("propose-trigger", "Proposer un trigger à valider par un admin")
-                        .addOption(OptionType.STRING, "nom", "Nom du trigger", true)
-                        .addOption(OptionType.STRING, "motif", "Mot ou expression à détecter", true)
-                        .addOption(OptionType.STRING, "reponse", "Réponse proposée", true)
-                        .addOption(OptionType.STRING, "type", "EXACT, CONTAINS, STARTS_WITH ou REGEX", false)
-        ).queue(
-                success -> log.info("Commandes slash enregistrées"),
-                error -> log.error("Échec d'enregistrement des commandes slash", error)
-        );
+        // Vide les commandes globales (propagation lente) au profit des commandes par serveur.
+        jda.updateCommands().queue();
 
         for (Guild guild : jda.getGuilds()) {
             serverService.syncGuild(guild.getId(), guild.getName());
+            registerSlashCommands(guild);
             log.info("Serveur synchronisé : {} ({})", guild.getName(), guild.getId());
         }
 
         updateAvatarIfConfigured();
 
         log.info("Bot Discord connecté en tant que {}", jda.getSelfUser().getName());
+    }
+
+    private ListenerAdapter guildJoinListener() {
+        return new ListenerAdapter() {
+            @Override
+            public void onGuildJoin(GuildJoinEvent event) {
+                Guild guild = event.getGuild();
+                serverService.syncGuild(guild.getId(), guild.getName());
+                registerSlashCommands(guild);
+                log.info("Nouveau serveur : {} ({})", guild.getName(), guild.getId());
+            }
+        };
+    }
+
+    private void registerSlashCommands(Guild guild) {
+        guild.updateCommands().addCommands(slashCommands()).queue(
+                success -> log.info("Commandes slash enregistrées sur {}", guild.getName()),
+                error -> log.error("Échec d'enregistrement des commandes slash sur {}", guild.getName(), error)
+        );
+    }
+
+    private static SlashCommandData[] slashCommands() {
+        return new SlashCommandData[] {
+                Commands.slash("help", "Guide des commandes DidiBot"),
+                Commands.slash("ping", "Vérifier que DidiBot est en ligne"),
+                Commands.slash("triggers", "Lister les triggers actifs sur ce serveur"),
+                Commands.slash("stats", "Statistiques de troll de ce serveur"),
+                Commands.slash("propose-trigger", "Proposer un trigger à valider par un admin")
+                        .addOptions(
+                                new OptionData(OptionType.STRING, "nom", "Nom du trigger", true),
+                                new OptionData(OptionType.STRING, "motif", "Mot ou expression à détecter", true),
+                                new OptionData(OptionType.STRING, "reponse", "Réponse proposée", true),
+                                new OptionData(OptionType.STRING, "type", "Type de détection", false)
+                                        .addChoice("Contient", "CONTAINS")
+                                        .addChoice("Exact", "EXACT")
+                                        .addChoice("Commence par", "STARTS_WITH")
+                                        .addChoice("Regex", "REGEX")
+                        )
+        };
     }
 
     private void updateAvatarIfConfigured() {

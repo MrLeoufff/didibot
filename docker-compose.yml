@@ -28,6 +28,7 @@ services:
     environment:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
       DISCORD_ENABLED: ${DISCORD_ENABLED:-true}
+      DISCORD_ADMIN_CHANNEL_ID: ${DISCORD_ADMIN_CHANNEL_ID:-}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
       JWT_SECRET: ${JWT_SECRET:-change-me-to-a-long-random-secret-key-32chars-min}

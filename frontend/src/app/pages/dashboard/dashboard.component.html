@@ -16,15 +16,15 @@
   <section class="stats">
     <article>
       <p>Déclencheurs actifs</p>
-      <strong>{{ activeTriggers() }}</strong>
+      <strong>{{ stats()?.activeTriggers ?? 0 }}</strong>
     </article>
     <article>
-      <p>Réponses récentes</p>
-      <strong>{{ recentLogs().length }}</strong>
+      <p>Réponses aujourd’hui</p>
+      <strong>{{ stats()?.repliesToday ?? 0 }}</strong>
     </article>
     <article>
-      <p>Serveurs</p>
-      <strong>{{ serverCount() }}</strong>
+      <p>Réponses 7 jours</p>
+      <strong>{{ stats()?.repliesLast7Days ?? 0 }}</strong>
     </article>
     <article>
       <p>Discord</p>
@@ -34,37 +34,57 @@
     </article>
   </section>
 
-  <section class="panel">
-    <div class="panel-head">
-      <h2>Derniers déclenchements</h2>
-      <a routerLink="/logs">Voir tout</a>
-    </div>
-
-    @if (recentLogs().length === 0) {
-      <p class="muted">Aucun log pour le moment. Envoie un message Discord pour tester.</p>
-    } @else {
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Heure</th>
-              <th>Salon</th>
-              <th>Utilisateur</th>
-              <th>Trigger</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (log of recentLogs(); track log.id) {
-              <tr>
-                <td>{{ log.executedAt | date: 'HH:mm:ss' }}</td>
-                <td>#{{ log.channelName || log.channelId }}</td>
-                <td>{{ log.username }}</td>
-                <td>{{ log.triggerName }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+  <div class="dash-grid">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Top triggers (7 j)</h2>
       </div>
-    }
-  </section>
+      @if (!stats()?.topTriggers?.length) {
+        <p class="muted">Pas encore assez de déclenchements.</p>
+      } @else {
+        <ol class="rank">
+          @for (row of stats()!.topTriggers; track row.name) {
+            <li>
+              <span>{{ row.name }}</span>
+              <strong>{{ row.count }}</strong>
+            </li>
+          }
+        </ol>
+      }
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Derniers déclenchements</h2>
+        <a routerLink="/logs">Voir tout</a>
+      </div>
+
+      @if (recentLogs().length === 0) {
+        <p class="muted">Aucun log pour le moment. Envoie un message Discord pour tester.</p>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Heure</th>
+                <th>Salon</th>
+                <th>Utilisateur</th>
+                <th>Trigger</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of recentLogs(); track log.id) {
+                <tr>
+                  <td>{{ log.executedAt | date: 'HH:mm:ss' }}</td>
+                  <td>#{{ log.channelName || log.channelId }}</td>
+                  <td>{{ log.username }}</td>
+                  <td>{{ log.triggerName }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </div>
 }

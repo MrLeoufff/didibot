@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
+import java.util.List;
+
 public interface TriggerExecutionRepository extends JpaRepository<TriggerExecution, Long> {
 
     Page<TriggerExecution> findAllByOrderByExecutedAtDesc(Pageable pageable);
@@ -44,4 +47,51 @@ public interface TriggerExecutionRepository extends JpaRepository<TriggerExecuti
             @Param("q") String query,
             Pageable pageable
     );
+
+    @Query("""
+            SELECT COUNT(e) FROM TriggerExecution e
+            WHERE (:guildId IS NULL OR :guildId = '' OR e.discordGuildId = :guildId)
+            """)
+    long countAll(@Param("guildId") String guildId);
+
+    @Query("""
+            SELECT COUNT(e) FROM TriggerExecution e
+            WHERE e.executedAt >= :since
+              AND (:guildId IS NULL OR :guildId = '' OR e.discordGuildId = :guildId)
+            """)
+    long countSince(@Param("since") Instant since, @Param("guildId") String guildId);
+
+    @Query("""
+            SELECT e.triggerName AS name, COUNT(e) AS total
+            FROM TriggerExecution e
+            WHERE e.executedAt >= :since
+              AND (:guildId IS NULL OR :guildId = '' OR e.discordGuildId = :guildId)
+            GROUP BY e.triggerName
+            ORDER BY COUNT(e) DESC
+            """)
+    List<NameCountView> topTriggers(
+            @Param("since") Instant since,
+            @Param("guildId") String guildId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT e.username AS name, COUNT(e) AS total
+            FROM TriggerExecution e
+            WHERE e.executedAt >= :since
+              AND (:guildId IS NULL OR :guildId = '' OR e.discordGuildId = :guildId)
+            GROUP BY e.username
+            ORDER BY COUNT(e) DESC
+            """)
+    List<NameCountView> topUsers(
+            @Param("since") Instant since,
+            @Param("guildId") String guildId,
+            Pageable pageable
+    );
+
+    interface NameCountView {
+        String getName();
+
+        long getTotal();
+    }
 }

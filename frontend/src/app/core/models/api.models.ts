@@ -100,9 +100,20 @@ export interface Page<T> {
   size: number;
 }
 
-export interface HealthStatus {
-  status: string;
-  discordConnected: boolean;
+export interface NameCount {
+  name: string;
+  count: number;
+}
+
+export interface BotStats {
+  repliesToday: number;
+  repliesLast7Days: number;
+  repliesAllTime: number;
+  activeTriggers: number;
+  pendingTriggers: number;
+  serverCount: number;
+  topTriggers: NameCount[];
+  topUsers: NameCount[];
 }
 
 export type UserStatus = 'PENDING' | 'APPROVED' | 'REJECTED';

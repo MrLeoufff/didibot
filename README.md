@@ -71,7 +71,7 @@ Les identifiants se configurent dans `.env` (voir `.env.example`).
 - Demande de compte : `/register` (reste en `PENDING` jusqu’à acceptation)
 - Admin : page `/users` pour accepter / refuser les comptes
 - Proposition publique : `/propose`
-- Discord : `/propose-trigger`
+- Discord : `/help` `/ping` `/triggers` `/stats` `/propose-trigger`
 - Les propositions restent en `PENDING` jusqu’à approbation admin
 - Événements rares : ~1 % des réponses (`DISCORD_RARE_EVENT_CHANCE`, défaut `0.01`)
 - Serveur **Global** (guild `0`) : la règle s’applique partout, sauf si le même motif existe déjà en local
@@ -83,6 +83,7 @@ Les identifiants se configurent dans `.env` (voir `.env.example`).
 3. Copier le **Bot Token** dans `.env`
 4. Inviter le bot (permissions Send Messages + Read Message History)
 5. Ne pas lancer deux instances avec le même token (`DISCORD_ENABLED=false` en local si la prod tourne)
+6. Optionnel : `DISCORD_ADMIN_CHANNEL_ID` pour notifier les nouvelles propositions dans un salon
 
 ## Structure
 

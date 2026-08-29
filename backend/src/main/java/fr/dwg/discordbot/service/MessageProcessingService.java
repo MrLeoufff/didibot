@@ -30,6 +30,7 @@ public class MessageProcessingService {
     private final BotImageService botImageService;
     private final DiscordProperties discordProperties;
     private final TriggerScopeService triggerScopeService;
+    private final ReplyPlaceholderService replyPlaceholderService;
 
     public MessageProcessingService(
             TriggerService triggerService,
@@ -41,7 +42,8 @@ public class MessageProcessingService {
             ServerService serverService,
             BotImageService botImageService,
             DiscordProperties discordProperties,
-            TriggerScopeService triggerScopeService
+            TriggerScopeService triggerScopeService,
+            ReplyPlaceholderService replyPlaceholderService
     ) {
         this.triggerService = triggerService;
         this.patternMatcherService = patternMatcherService;
@@ -53,6 +55,7 @@ public class MessageProcessingService {
         this.botImageService = botImageService;
         this.discordProperties = discordProperties;
         this.triggerScopeService = triggerScopeService;
+        this.replyPlaceholderService = replyPlaceholderService;
     }
 
     private List<Trigger> resolveActiveTriggers(String guildId) {
@@ -101,7 +104,7 @@ public class MessageProcessingService {
             }
 
             TriggerResponse response = picked.get().response();
-            String content = response.getContent();
+            String content = replyPlaceholderService.interpolate(response.getContent(), message);
             boolean attachImage = shouldAttachImage(picked.get().rareEvent());
             cooldownService.markTriggered(message.guildId(), trigger.getId());
             triggerExecutionService.logExecution(trigger, message, content);

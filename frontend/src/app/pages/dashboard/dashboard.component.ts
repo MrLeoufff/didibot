@@ -1,8 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { HealthStatus, Trigger, TriggerExecution } from '../../core/models/api.models';
+import { BotStats, HealthStatus, TriggerExecution } from '../../core/models/api.models';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
@@ -17,24 +17,20 @@ export class DashboardComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly health = signal<HealthStatus | null>(null);
-  readonly triggers = signal<Trigger[]>([]);
+  readonly stats = signal<BotStats | null>(null);
   readonly recentLogs = signal<TriggerExecution[]>([]);
-  readonly serverCount = signal(0);
   readonly error = signal<string | null>(null);
-  readonly activeTriggers = computed(() => this.triggers().filter((t) => t.enabled).length);
 
   ngOnInit(): void {
     forkJoin({
       health: this.api.getHealth(),
-      triggers: this.api.getTriggers(),
+      stats: this.api.getStats(),
       logs: this.api.getLogs(0, 8),
-      servers: this.api.getServers(),
     }).subscribe({
-      next: ({ health, triggers, logs, servers }) => {
+      next: ({ health, stats, logs }) => {
         this.health.set(health);
-        this.triggers.set(triggers);
+        this.stats.set(stats);
         this.recentLogs.set(logs.content ?? []);
-        this.serverCount.set(servers.length);
         this.loading.set(false);
       },
       error: () => {

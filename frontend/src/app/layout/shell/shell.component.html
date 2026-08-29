@@ -10,7 +10,12 @@
 
     <nav>
       @for (item of nav(); track item.path) {
-        <a [routerLink]="item.path" routerLinkActive="active">{{ item.label }}</a>
+        <a [routerLink]="item.path" routerLinkActive="active">
+          {{ item.label }}
+          @if (item.badge > 0) {
+            <span class="nav-badge">{{ item.badge }}</span>
+          }
+        </a>
       }
     </nav>
 

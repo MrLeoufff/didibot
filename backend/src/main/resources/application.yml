@@ -26,6 +26,7 @@ discord:
   rare-event-chance: ${DISCORD_RARE_EVENT_CHANCE:0.01}
   avatar-image-chance: ${DISCORD_AVATAR_IMAGE_CHANCE:0.12}
   update-avatar-on-startup: ${DISCORD_UPDATE_AVATAR_ON_STARTUP:true}
+  admin-channel-id: ${DISCORD_ADMIN_CHANNEL_ID:}
 
 admin:
   username: ${ADMIN_USERNAME:admin}

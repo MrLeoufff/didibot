@@ -1,6 +1,7 @@
 package fr.dwg.discordbot.repository;
 
 import fr.dwg.discordbot.entity.Trigger;
+import fr.dwg.discordbot.entity.TriggerStatus;
 import fr.dwg.discordbot.entity.TriggerType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -60,5 +61,15 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
             TriggerType type,
             String pattern
     );
+
+    long countByStatus(TriggerStatus status);
+
+    @Query("""
+            SELECT COUNT(t) FROM Trigger t
+            WHERE t.enabled = true
+              AND t.status = fr.dwg.discordbot.entity.TriggerStatus.APPROVED
+              AND t.discordServer.enabled = true
+            """)
+    long countActiveApproved();
 }
 

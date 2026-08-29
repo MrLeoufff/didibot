@@ -11,6 +11,8 @@ public class DiscordProperties {
     /** Probabilité d'attacher l'image DidiBot à une réponse normale. */
     private double avatarImageChance = 0.12;
     private boolean updateAvatarOnStartup = true;
+    /** Salon Discord pour notifier les propositions (vide = désactivé). */
+    private String adminChannelId = "";
 
     public String getToken() {
         return token;
@@ -50,5 +52,13 @@ public class DiscordProperties {
 
     public void setUpdateAvatarOnStartup(boolean updateAvatarOnStartup) {
         this.updateAvatarOnStartup = updateAvatarOnStartup;
+    }
+
+    public String getAdminChannelId() {
+        return adminChannelId;
+    }
+
+    public void setAdminChannelId(String adminChannelId) {
+        this.adminChannelId = adminChannelId;
     }
 }

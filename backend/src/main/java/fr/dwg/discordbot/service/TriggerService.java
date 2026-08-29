@@ -16,8 +16,10 @@ import fr.dwg.discordbot.entity.TriggerStatus;
 import fr.dwg.discordbot.entity.TriggerType;
 import fr.dwg.discordbot.exception.BadRequestException;
 import fr.dwg.discordbot.exception.ResourceNotFoundException;
+import fr.dwg.discordbot.event.TriggerProposedEvent;
 import fr.dwg.discordbot.repository.TriggerRepository;
 import fr.dwg.discordbot.repository.TriggerResponseRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,17 +34,20 @@ public class TriggerService {
     private final TriggerResponseRepository triggerResponseRepository;
     private final ServerService serverService;
     private final PatternMatcherService patternMatcherService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public TriggerService(
             TriggerRepository triggerRepository,
             TriggerResponseRepository triggerResponseRepository,
             ServerService serverService,
-            PatternMatcherService patternMatcherService
+            PatternMatcherService patternMatcherService,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.triggerRepository = triggerRepository;
         this.triggerResponseRepository = triggerResponseRepository;
         this.serverService = serverService;
         this.patternMatcherService = patternMatcherService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -107,7 +112,9 @@ public class TriggerService {
         trigger.setProposedByDiscordId(proposedByDiscordId);
         applyResponses(trigger, request.getResponses());
 
-        return toDto(triggerRepository.save(trigger));
+        TriggerDto created = toDto(triggerRepository.save(trigger));
+        eventPublisher.publishEvent(new TriggerProposedEvent(created));
+        return created;
     }
 
     @Transactional

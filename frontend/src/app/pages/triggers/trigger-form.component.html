@@ -140,7 +140,7 @@
         <h2>Réponses</h2>
         <button type="button" class="btn ghost" (click)="addResponse()">+ Ajouter une réponse</button>
       </div>
-      <p class="hint">Une réponse au hasard est tirée à chaque match. Les réponses rares n’apparaissent qu’environ 1 % du temps.</p>
+      <p class="hint">Une réponse au hasard est tirée à chaque match. Les réponses rares n’apparaissent qu’environ 1 % du temps. Jetons : <code>&#123;user&#125;</code>, <code>&#123;mention&#125;</code>, <code>&#123;channel&#125;</code>, <code>&#123;guild&#125;</code>.</p>
 
       @for (control of responses.controls; track $index; let i = $index) {
         <div class="response-card" [formGroupName]="i">
