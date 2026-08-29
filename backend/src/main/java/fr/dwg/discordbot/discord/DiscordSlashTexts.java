@@ -12,7 +12,7 @@ public final class DiscordSlashTexts {
             Tape `/` dans un salon, puis choisis une commande.
 
             **Commandes**
-            • `/help` — ce guide (visible uniquement pour toi)
+            • `/help` — ce guide (visible dans le salon)
             • `/ping` — bot en ligne + latence
             • `/triggers` — règles actives sur **ce** serveur (locales + globales)
             • `/stats` — réponses du jour, 7 jours, top triggers et top trolleurs

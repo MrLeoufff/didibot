@@ -56,7 +56,7 @@ public class DiscordSlashCommandListener extends ListenerAdapter {
     }
 
     private void handleHelp(SlashCommandInteractionEvent event) {
-        event.reply(DiscordSlashTexts.HELP).setEphemeral(true).queue();
+        event.reply(DiscordSlashTexts.HELP).queue();
     }
 
     private void handleTriggers(SlashCommandInteractionEvent event) {
