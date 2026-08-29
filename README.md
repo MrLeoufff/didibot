@@ -22,7 +22,7 @@ Nginx (frontend interne)
 ## Stack
 
 - Java 21, Spring Boot, JDA, PostgreSQL, Flyway
-- Angular 19, RxJS
+- Angular 21, RxJS
 - Docker Compose
 - Caddy (prod) / Nginx interne (front)
 
@@ -70,7 +70,7 @@ Les fichiers Flyway `*.sql` doivent rester en **LF** (voir `.gitattributes`) : u
 
 ### Angular
 
-Garder le frontend en **Angular 19**. Dependabot ignore les majeures `@angular/*` pour éviter un nouveau casse-build.
+Garder le frontend en **Angular 21**. Dependabot ignore les majeures (pas de saut vers 22 sans décision explicite).
 
 ## DNS Hostinger (`dwg-dev.fr`)
 
