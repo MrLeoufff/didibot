@@ -77,6 +77,8 @@
       {{ saving() ? 'Envoi…' : 'Envoyer la proposition' }}
     </button>
 
-    <a class="link" routerLink="/login">Espace admin</a>
+    <a class="link" [routerLink]="auth.hasValidSession() ? '/dashboard' : '/login'">
+      {{ auth.hasValidSession() ? 'Retour à l’admin' : 'Espace admin' }}
+    </a>
   </form>
 </div>

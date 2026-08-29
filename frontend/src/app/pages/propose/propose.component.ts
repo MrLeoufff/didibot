@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { TriggerType } from '../../core/models/api.models';
 import { TRIGGER_TYPE_HINTS, TRIGGER_TYPE_LABELS } from '../../core/models/trigger.labels';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { apiErrorMessage } from '../../core/utils/http-error';
 
 @Component({
@@ -16,6 +17,7 @@ import { apiErrorMessage } from '../../core/utils/http-error';
 export class ProposeComponent {
   private readonly api = inject(ApiService);
   private readonly fb = inject(FormBuilder);
+  readonly auth = inject(AuthService);
 
   readonly types: TriggerType[] = ['CONTAINS', 'EXACT', 'STARTS_WITH', 'REGEX'];
   readonly typeLabels = TRIGGER_TYPE_LABELS;

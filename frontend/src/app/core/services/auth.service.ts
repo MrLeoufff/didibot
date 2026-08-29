@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { LoginResponse } from '../models/api.models';
+import { isJwtUsable } from '../utils/jwt';
 
 const TOKEN_KEY = 'didibot_admin_token';
 const USER_KEY = 'didibot_admin_user';
@@ -13,15 +14,23 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
 
-  private readonly tokenSignal = signal<string | null>(localStorage.getItem(TOKEN_KEY));
-  private readonly userSignal = signal<string | null>(localStorage.getItem(USER_KEY));
-  private readonly roleSignal = signal<string | null>(localStorage.getItem(ROLE_KEY));
+  private readonly tokenSignal = signal<string | null>(null);
+  private readonly userSignal = signal<string | null>(null);
+  private readonly roleSignal = signal<string | null>(null);
 
   readonly token = this.tokenSignal.asReadonly();
   readonly username = this.userSignal.asReadonly();
   readonly role = this.roleSignal.asReadonly();
-  readonly isAuthenticated = computed(() => !!this.tokenSignal());
-  readonly isAdmin = computed(() => this.roleSignal() === 'ADMIN');
+  readonly isAuthenticated = computed(() => this.hasValidSession());
+  readonly isAdmin = computed(() => this.roleSignal() === 'ADMIN' && this.hasValidSession());
+
+  constructor() {
+    this.restoreSession();
+  }
+
+  hasValidSession(): boolean {
+    return isJwtUsable(this.tokenSignal());
+  }
 
   login(username: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>('/api/auth/login', { username, password }).pipe(
@@ -37,12 +46,27 @@ export class AuthService {
   }
 
   logout(): void {
+    this.clearSession();
+    this.router.navigateByUrl('/login');
+  }
+
+  private restoreSession(): void {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!isJwtUsable(token)) {
+      this.clearSession();
+      return;
+    }
+    this.tokenSignal.set(token);
+    this.userSignal.set(localStorage.getItem(USER_KEY));
+    this.roleSignal.set(localStorage.getItem(ROLE_KEY));
+  }
+
+  private clearSession(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(ROLE_KEY);
     this.tokenSignal.set(null);
     this.userSignal.set(null);
     this.roleSignal.set(null);
-    this.router.navigateByUrl('/login');
   }
 }
