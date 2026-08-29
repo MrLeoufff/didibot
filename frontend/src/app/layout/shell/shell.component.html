@@ -1,10 +1,10 @@
 <div class="shell">
   <aside class="sidebar">
     <div class="brand">
-      <span class="brand-mark">DB</span>
+      <img class="brand-mark" src="/didibot.png" width="48" height="48" alt="" />
       <div>
         <p class="brand-name">DidiBot</p>
-        <p class="brand-sub">Admin</p>
+        <p class="brand-sub">{{ tagline }}</p>
       </div>
     </div>
 
@@ -20,9 +20,9 @@
     </nav>
 
     <div class="sidebar-foot">
-      <p class="muted">{{ auth.username() }}</p>
-      <button type="button" class="btn ghost" (click)="logout()">Déconnexion</button>
-      <a class="muted-link" routerLink="/propose">Page proposition</a>
+      <p class="muted user">{{ auth.username() }}</p>
+      <button type="button" class="btn ghost" (click)="logout()">Sortir du QG</button>
+      <a class="muted-link" routerLink="/propose">Lancer une punchline</a>
     </div>
   </aside>
 

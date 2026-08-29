@@ -1,9 +1,9 @@
 <header class="page-header">
   <div>
-    <p class="eyebrow">Vue d’ensemble</p>
-    <h1>Dashboard</h1>
+    <p class="eyebrow">Tableau de chasse</p>
+    <h1>Le QG</h1>
   </div>
-  <a class="btn" routerLink="/triggers/new">Nouveau trigger</a>
+  <a class="btn" routerLink="/triggers/new">Nouvelle punchline</a>
 </header>
 
 @if (error()) {
@@ -11,25 +11,25 @@
 }
 
 @if (loading()) {
-  <p class="muted">Chargement…</p>
+  <p class="muted">La JVM chauffe…</p>
 } @else {
   <section class="stats">
     <article>
-      <p>Déclencheurs actifs</p>
+      <p>Punchlines actives</p>
       <strong>{{ stats()?.activeTriggers ?? 0 }}</strong>
     </article>
     <article>
-      <p>Réponses aujourd’hui</p>
+      <p>Trolls du jour</p>
       <strong>{{ stats()?.repliesToday ?? 0 }}</strong>
     </article>
     <article>
-      <p>Réponses 7 jours</p>
+      <p>Cette semaine</p>
       <strong>{{ stats()?.repliesLast7Days ?? 0 }}</strong>
     </article>
     <article>
-      <p>Discord</p>
+      <p>DidiBot</p>
       <strong [class.ok]="health()?.discordConnected" [class.ko]="!health()?.discordConnected">
-        {{ health()?.discordConnected ? 'Connecté' : 'Hors ligne' }}
+        {{ health()?.discordConnected ? 'En train de troller' : 'Sieste forcée' }}
       </strong>
     </article>
   </section>
@@ -37,15 +37,16 @@
   <div class="dash-grid">
     <section class="panel">
       <div class="panel-head">
-        <h2>Top triggers (7 j)</h2>
+        <h2>Hall of fame</h2>
       </div>
       @if (!stats()?.topTriggers?.length) {
-        <p class="muted">Pas encore assez de déclenchements.</p>
+        <p class="muted">Personne n’a encore déclenché le chaos. C’est flippant.</p>
       } @else {
         <ol class="rank">
-          @for (row of stats()!.topTriggers; track row.name) {
+          @for (row of stats()!.topTriggers; track row.name; let i = $index) {
             <li>
-              <span>{{ row.name }}</span>
+              <span class="place">{{ i + 1 }}</span>
+              <span class="name">{{ row.name }}</span>
               <strong>{{ row.count }}</strong>
             </li>
           }
@@ -55,12 +56,12 @@
 
     <section class="panel">
       <div class="panel-head">
-        <h2>Derniers déclenchements</h2>
-        <a routerLink="/logs">Voir tout</a>
+        <h2>Derniers dégâts</h2>
+        <a routerLink="/logs">Voir le carnage</a>
       </div>
 
       @if (recentLogs().length === 0) {
-        <p class="muted">Aucun log pour le moment. Envoie un message Discord pour tester.</p>
+        <p class="muted">Rien. Envoie « C# » sur Discord et reviens.</p>
       } @else {
         <div class="table-wrap">
           <table>
@@ -68,8 +69,8 @@
               <tr>
                 <th>Heure</th>
                 <th>Salon</th>
-                <th>Utilisateur</th>
-                <th>Trigger</th>
+                <th>Coupable</th>
+                <th>Punchline</th>
               </tr>
             </thead>
             <tbody>

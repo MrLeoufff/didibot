@@ -11,6 +11,14 @@
   gap: 0.9rem;
 }
 
+.mascot {
+  margin-bottom: 0.2rem;
+}
+
+.btn[type='submit'] {
+  width: 100%;
+}
+
 h1 {
   margin: 0;
 }
@@ -28,10 +36,3 @@ label {
   text-decoration: none;
 }
 
-.banner.ok {
-  background: #d8f5e5;
-  color: #176b43;
-  border: 1px solid #b7e7cb;
-  padding: 0.85rem 1rem;
-  border-radius: 0.75rem;
-}

@@ -92,7 +92,7 @@ export class ProposeComponent {
       .subscribe({
         next: (created) => {
           this.success.set(
-            `Proposition #${created.id} envoyée. Un admin doit l’approuver avant activation.`
+            `Punchline #${created.id} au chaud. Un admin doit encore dire oui.`
           );
           this.form.reset({
             name: '',

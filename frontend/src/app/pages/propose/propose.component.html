@@ -1,9 +1,10 @@
 <div class="propose-page">
   <form class="panel form" [formGroup]="form" (ngSubmit)="submit()">
-    <p class="eyebrow">Communauté</p>
-    <h1>Proposer un trigger</h1>
+    <img class="mascot" src="/didibot.png" width="64" height="64" alt="DidiBot" />
+    <p class="eyebrow">Boîte à idées</p>
+    <h1>Propose une punchline</h1>
     <p class="muted">
-      Ta proposition restera en attente jusqu’à validation d’un admin.
+      DidiBot adorera. Un admin, lui, doit encore dire oui.
     </p>
 
     @if (error()) {
@@ -14,23 +15,23 @@
     }
 
     <label>
-      Ton pseudo
+      Ton pseudo (pour la gloire)
       <input formControlName="proposedBy" placeholder="René" />
     </label>
 
     <label [class.invalid]="invalid('name')">
-      Nom du trigger
+      Nom de la punchline
       <input formControlName="name" placeholder="Troll PHP" />
       @if (invalid("name")) {
-        <span class="field-error">Le nom est requis.</span>
+        <span class="field-error">Il lui faut un nom. Même pour un troll.</span>
       }
     </label>
 
     <label [class.invalid]="invalid('pattern')">
-      Motif
+      Mot qui déclenche le chaos
       <input formControlName="pattern" placeholder="PHP" />
       @if (invalid("pattern")) {
-        <span class="field-error">Le motif est requis.</span>
+        <span class="field-error">Sans motif, DidiBot reste muet. Tragique.</span>
       }
     </label>
 
@@ -60,9 +61,9 @@
 
     <div formArrayName="responses" class="responses">
       <div class="panel-head">
-        <h2>Réponses</h2>
+        <h2>Répliques</h2>
         <button type="button" class="btn ghost" (click)="addResponse()">
-          + Ajouter
+          + Une de plus
         </button>
       </div>
       @for (control of responses.controls; track $index; let i = $index) {
@@ -71,10 +72,10 @@
             <textarea
               [formControlName]="i"
               rows="2"
-              placeholder="Texte de réponse…"
+              placeholder="Ce que DidiBot lâchera dans le salon…"
             ></textarea>
             @if (responseInvalid(i)) {
-              <span class="field-error">Le texte est requis.</span>
+              <span class="field-error">Une punchline vide, c’est du C#.</span>
             }
           </label>
           <button
@@ -90,14 +91,14 @@
     </div>
 
     <button class="btn" type="submit" [disabled]="saving()">
-      {{ saving() ? "Envoi…" : "Envoyer la proposition" }}
+      {{ saving() ? "Envoi au jury…" : "Envoyer au QG" }}
     </button>
 
     <a
       class="link"
       [routerLink]="auth.hasValidSession() ? '/dashboard' : '/login'"
     >
-      {{ auth.hasValidSession() ? "Retour à l’admin" : "Espace admin" }}
+      {{ auth.hasValidSession() ? "Retour au QG" : "Espace admin" }}
     </a>
   </form>
 </div>

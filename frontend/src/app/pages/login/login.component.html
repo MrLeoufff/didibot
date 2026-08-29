@@ -1,16 +1,17 @@
 <div class="login-page">
   <form class="panel form" [formGroup]="form" (ngSubmit)="submit()">
-    <p class="eyebrow">DidiBot</p>
-    <h1>Connexion admin</h1>
-    <p class="muted">Connexion réservée aux comptes acceptés.</p>
+    <img class="mascot" src="/didibot.png" width="72" height="72" alt="DidiBot" />
+    <p class="eyebrow">QG du troll</p>
+    <h1>On t’attendait.</h1>
+    <p class="muted">Java &gt; C#. Les comptes non validés, encore plus bas.</p>
 
     @if (error()) {
       <p class="banner error">{{ error() }}</p>
     }
 
     <label>
-      Utilisateur
-      <input formControlName="username" autocomplete="username" />
+      Pseudo
+      <input formControlName="username" autocomplete="username" placeholder="Lead Tech en herbe" />
     </label>
 
     <label>
@@ -19,10 +20,10 @@
     </label>
 
     <button class="btn" type="submit" [disabled]="loading()">
-      {{ loading() ? 'Connexion…' : 'Se connecter' }}
+      {{ loading() ? 'La JVM démarre…' : 'Entrer dans le QG' }}
     </button>
 
-    <a class="link" routerLink="/register">Demander un compte</a>
-    <a class="link" routerLink="/propose">Proposer un trigger sans compte</a>
+    <a class="link" routerLink="/register">Demander un badge troll</a>
+    <a class="link" routerLink="/propose">Proposer une punchline sans compte</a>
   </form>
 </div>

@@ -41,13 +41,10 @@ label {
   text-decoration: none;
 }
 
-.banner.ok {
-  background: #d8f5e5;
-  color: #176b43;
-  border: 1px solid #b7e7cb;
-  padding: 0.85rem 1rem;
-  border-radius: 0.75rem;
+.btn[type='submit'] {
+  width: 100%;
 }
+
 
 @media (max-width: 720px) {
   .row,

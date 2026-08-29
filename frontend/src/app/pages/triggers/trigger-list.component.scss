@@ -16,7 +16,7 @@ a {
 }
 
 a:hover {
-  color: color-mix(in srgb, var(--accent-strong) 80%, black);
+  color: var(--accent);
 }
 
 .toolbar {
@@ -40,7 +40,7 @@ a:hover {
 .chip {
   appearance: none;
   border: 1px solid var(--line);
-  background: white;
+  background: var(--panel);
   border-radius: 999px;
   padding: 0.4rem 0.75rem;
   font: inherit;
@@ -52,6 +52,7 @@ a:hover {
 
 .chip.active {
   background: var(--accent);
+  color: #14160c;
   border-color: transparent;
 }
 

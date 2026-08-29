@@ -34,7 +34,7 @@ export class DashboardComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Impossible de charger le dashboard. Vérifie que l’API est disponible.');
+        this.error.set('Le QG est hors-ligne. Vérifie que l’API répond encore.');
         this.loading.set(false);
       },
     });

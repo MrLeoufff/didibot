@@ -50,7 +50,7 @@ label.invalid input,
 label.invalid select,
 label.invalid textarea {
   border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
-  background: #fff7f6;
+  background: color-mix(in srgb, var(--danger) 12%, var(--panel));
 }
 
 .tester {
@@ -58,7 +58,7 @@ label.invalid textarea {
   gap: 0.45rem;
   padding: 0.85rem 1rem;
   border-radius: 0.85rem;
-  background: color-mix(in srgb, var(--accent) 12%, white);
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel));
   border: 1px solid var(--line);
 }
 
@@ -69,7 +69,7 @@ label.invalid textarea {
 }
 
 .match.yes {
-  color: #176b43;
+  color: var(--accent);
 }
 
 .match.no {
@@ -86,7 +86,7 @@ label.invalid textarea {
   padding: 0.85rem;
   border: 1px solid var(--line);
   border-radius: 0.85rem;
-  background: white;
+  background: color-mix(in srgb, var(--panel) 70%, black);
 }
 
 .response-meta {
@@ -104,9 +104,9 @@ label.invalid textarea {
 }
 
 .banner.warn {
-  background: #fff4d6;
-  color: #7a5b12;
-  border: 1px solid #f0d48a;
+  background: color-mix(in srgb, #ffb703 16%, var(--panel));
+  color: #ffe08a;
+  border: 1px solid color-mix(in srgb, #ffb703 40%, var(--line));
   margin: 0;
 }
 

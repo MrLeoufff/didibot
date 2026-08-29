@@ -1,7 +1,7 @@
 <header class="page-header">
   <div>
-    <p class="eyebrow">Accès</p>
-    <h1>Comptes</h1>
+    <p class="eyebrow">Sécurité (relâche)</p>
+    <h1>Gardiens</h1>
   </div>
 </header>
 
@@ -10,12 +10,12 @@
 }
 
 @if (loading()) {
-  <p class="muted">Chargement…</p>
+  <p class="muted">On vérifie les badges…</p>
 } @else {
   @if (pending().length > 0) {
     <section class="panel pending-panel">
       <div class="panel-head">
-        <h2>À accepter ({{ pending().length }})</h2>
+        <h2>Veulent entrer ({{ pending().length }})</h2>
       </div>
       <div class="table-wrap">
         <table>
@@ -32,8 +32,8 @@
                 <td>{{ user.username }}</td>
                 <td>{{ user.requestedAt | date: 'short' }}</td>
                 <td class="actions">
-                  <button type="button" class="btn" (click)="approve(user)">Accepter</button>
-                  <button type="button" class="btn danger ghost" (click)="reject(user)">Refuser</button>
+                  <button type="button" class="btn" (click)="approve(user)">Badge OK</button>
+                  <button type="button" class="btn danger ghost" (click)="reject(user)">Nope</button>
                 </td>
               </tr>
             }
@@ -46,7 +46,7 @@
   @if (others().length === 0) {
     <section class="panel">
       <p class="muted">
-        {{ pending().length === 0 ? 'Aucune demande de compte pour le moment.' : 'Aucun autre compte.' }}
+        {{ pending().length === 0 ? 'Personne à la porte. Calme plat.' : 'Le reste de la team est vide.' }}
       </p>
     </section>
   } @else {

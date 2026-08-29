@@ -1,12 +1,12 @@
 <header class="page-header">
   <div>
-    <p class="eyebrow">Règles</p>
-    <h1>Triggers</h1>
+    <p class="eyebrow">Arsenal</p>
+    <h1>Punchlines</h1>
     @if (!loading()) {
-      <p class="muted count">{{ triggers().length }} règle{{ triggers().length > 1 ? 's' : '' }}</p>
+      <p class="muted count">{{ triggers().length }} réplique{{ triggers().length > 1 ? 's' : '' }} en stock</p>
     }
   </div>
-  <a class="btn" routerLink="/triggers/new">Ajouter</a>
+  <a class="btn" routerLink="/triggers/new">Ajouter un troll</a>
 </header>
 
 @if (error()) {
@@ -14,12 +14,12 @@
 }
 
 @if (loading()) {
-  <p class="muted">Chargement…</p>
+  <p class="muted">On fouille le coffre à blagues…</p>
 } @else {
   @if (pending().length > 0) {
     <section class="panel pending-panel">
       <div class="panel-head">
-        <h2>À approuver ({{ pending().length }})</h2>
+        <h2>En attente de jugement ({{ pending().length }})</h2>
       </div>
       <div class="table-wrap">
         <table>
@@ -40,8 +40,8 @@
                 <td><code>{{ trigger.pattern }}</code></td>
                 <td>{{ trigger.proposedBy || '—' }}</td>
                 <td class="actions">
-                  <button type="button" class="btn" (click)="approve(trigger)">Approuver</button>
-                  <button type="button" class="btn danger ghost" (click)="reject(trigger)">Refuser</button>
+                  <button type="button" class="btn" (click)="approve(trigger)">Dans le bot</button>
+                  <button type="button" class="btn danger ghost" (click)="reject(trigger)">Too cringe</button>
                 </td>
               </tr>
             }
@@ -59,13 +59,13 @@
           type="search"
           [value]="query()"
           (input)="onSearch($event)"
-          placeholder="Rechercher un nom, un motif, un serveur…"
+          placeholder="Cherche un troll, un motif, un serveur…"
         />
       </label>
       <div class="filters">
         <button type="button" class="chip" [class.active]="statusFilter() === 'ALL'" (click)="statusFilter.set('ALL')">Tous</button>
-        <button type="button" class="chip" [class.active]="statusFilter() === 'ACTIVE'" (click)="statusFilter.set('ACTIVE')">Actifs</button>
-        <button type="button" class="chip" [class.active]="statusFilter() === 'INACTIVE'" (click)="statusFilter.set('INACTIVE')">Inactifs</button>
+        <button type="button" class="chip" [class.active]="statusFilter() === 'ACTIVE'" (click)="statusFilter.set('ACTIVE')">En chasse</button>
+        <button type="button" class="chip" [class.active]="statusFilter() === 'INACTIVE'" (click)="statusFilter.set('INACTIVE')">En pause</button>
         <button type="button" class="chip" [class.active]="statusFilter() === 'REJECTED'" (click)="statusFilter.set('REJECTED')">Refusés</button>
       </div>
     </div>
@@ -73,9 +73,9 @@
     @if (filtered().length === 0) {
       <p class="muted">
         @if (query() || statusFilter() !== 'ALL') {
-          Aucun trigger ne correspond à ce filtre.
+          Rien. Même DidiBot n’a pas trouvé.
         } @else {
-          Aucun trigger approuvé pour le moment.
+          Coffre vide. Ajoute une punchline, sois le héros.
         }
       </p>
     } @else {
@@ -87,7 +87,7 @@
               <th>Déclencheur</th>
               <th>Type</th>
               <th>Serveur</th>
-              <th>Réponses</th>
+              <th>Répliques</th>
               <th>État</th>
               <th></th>
             </tr>
@@ -104,7 +104,7 @@
                 <td>{{ trigger.responses.length }}</td>
                 <td>
                   <span class="badge" [class.on]="trigger.enabled" [class.off]="!trigger.enabled">
-                    {{ trigger.enabled ? 'Actif' : 'Inactif' }}
+                    {{ trigger.enabled ? 'En chasse' : 'En pause' }}
                   </span>
                   @if (trigger.status !== 'APPROVED') {
                     <span class="badge off">{{ statusLabels[trigger.status] }}</span>
@@ -112,7 +112,7 @@
                 </td>
                 <td class="actions">
                   <button type="button" class="btn ghost" (click)="toggle(trigger)" [disabled]="trigger.status !== 'APPROVED'">
-                    {{ trigger.enabled ? 'Désactiver' : 'Activer' }}
+                    {{ trigger.enabled ? 'Couper' : 'Relancer' }}
                   </button>
                   <button type="button" class="btn danger ghost" (click)="remove(trigger)">
                     Supprimer

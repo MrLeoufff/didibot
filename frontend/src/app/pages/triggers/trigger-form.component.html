@@ -1,9 +1,9 @@
 <header class="page-header">
   <div>
-    <p class="eyebrow">{{ editId ? 'Édition' : 'Création' }}</p>
-    <h1>{{ editId ? 'Modifier le trigger' : 'Nouveau trigger' }}</h1>
+    <p class="eyebrow">{{ editId ? 'Atelier' : 'Laboratoire' }}</p>
+    <h1>{{ editId ? 'Peaufiner la punchline' : 'Nouvelle punchline' }}</h1>
   </div>
-  <a class="btn ghost" routerLink="/triggers">Retour</a>
+  <a class="btn ghost" routerLink="/triggers">Retour aux trolls</a>
 </header>
 
 @if (error()) {
@@ -17,21 +17,21 @@
     <section class="form-section">
       <h2>Identité</h2>
       <label [class.invalid]="invalid('name')">
-        Nom
+        Nom de code
         <input formControlName="name" placeholder="Troll C#" />
         @if (invalid('name')) {
-          <span class="field-error">Le nom est requis.</span>
+          <span class="field-error">Même un troll a besoin d’un nom.</span>
         }
       </label>
     </section>
 
     <section class="form-section">
-      <h2>Quand réagir</h2>
+      <h2>Quand frapper</h2>
       <label [class.invalid]="invalid('pattern')">
-        Texte déclencheur
+        Mot qui déclenche DidiBot
         <input formControlName="pattern" placeholder="C#" />
         @if (invalid('pattern')) {
-          <span class="field-error">Le déclencheur est requis.</span>
+          <span class="field-error">Sans motif, rien ne se passe. Comme un stand-up vide.</span>
         }
       </label>
 
@@ -63,23 +63,23 @@
         </label>
         @switch (matchPreview()) {
           @case ('yes') {
-            <p class="match yes">Ça matchera — le bot pourra répondre.</p>
+            <p class="match yes">Touché. DidiBot pourra répondre.</p>
           }
           @case ('no') {
-            <p class="match no">Pas de match avec ce message.</p>
+            <p class="match no">Raté. Ce message passe entre les mailles.</p>
           }
           @case ('invalid') {
-            <p class="match no">Regex invalide. Corrige le motif.</p>
+            <p class="match no">Cette regex a crash la JVM. Corrige.</p>
           }
           @default {
-            <p class="hint">Tape un exemple de message pour vérifier le déclencheur.</p>
+            <p class="hint">Colle un vrai message Discord pour voir si ça pète.</p>
           }
         }
       </div>
     </section>
 
     <section class="form-section">
-      <h2>Où ça s’applique</h2>
+      <h2>Terrain de chasse</h2>
       <div class="row">
         <label [class.invalid]="invalid('discordServerId')">
           Serveur Discord
@@ -131,24 +131,24 @@
 
       <label class="checkbox">
         <input type="checkbox" formControlName="enabled" />
-        Activer tout de suite
+        Activer tout de suite (lâcher DidiBot)
       </label>
     </section>
 
     <section class="form-section responses" formArrayName="responses">
       <div class="panel-head">
-        <h2>Réponses</h2>
-        <button type="button" class="btn ghost" (click)="addResponse()">+ Ajouter une réponse</button>
+        <h2>Répliques</h2>
+        <button type="button" class="btn ghost" (click)="addResponse()">+ Une de plus</button>
       </div>
-      <p class="hint">Une réponse au hasard est tirée à chaque match. Les réponses rares n’apparaissent qu’environ 1 % du temps. Jetons : <code>&#123;user&#125;</code>, <code>&#123;mention&#125;</code>, <code>&#123;channel&#125;</code>, <code>&#123;guild&#125;</code>.</p>
+      <p class="hint">Une réplique au hasard à chaque match. Les rares (~1 %) collent parfois l’avatar. Jetons : <code>&#123;user&#125;</code>, <code>&#123;mention&#125;</code>, <code>&#123;channel&#125;</code>, <code>&#123;guild&#125;</code>.</p>
 
       @for (control of responses.controls; track $index; let i = $index) {
         <div class="response-card" [formGroupName]="i">
           <label [class.invalid]="responseInvalid(i)">
             Texte
-            <textarea formControlName="content" rows="2" placeholder="Texte envoyé sur Discord…"></textarea>
+            <textarea formControlName="content" rows="2" placeholder="Ce que DidiBot lâchera…"></textarea>
             @if (responseInvalid(i)) {
-              <span class="field-error">Le texte de la réponse est requis.</span>
+              <span class="field-error">Une punchline vide, c’est du C#.</span>
             }
           </label>
           <div class="response-meta">
@@ -180,11 +180,11 @@
     <div class="form-actions">
       @if (editId) {
         <button type="button" class="btn ghost" (click)="copyToServers()" [disabled]="copying() || saving()">
-          {{ copying() ? 'Duplication…' : 'Dupliquer sur tous les serveurs' }}
+          {{ copying() ? 'Photocopie…' : 'Cloner sur tous les territoires' }}
         </button>
       }
       <button class="btn" type="submit" [disabled]="saving() || copying()">
-        {{ saving() ? 'Enregistrement…' : editId ? 'Enregistrer les modifications' : 'Créer le trigger' }}
+        {{ saving() ? 'Compilation…' : editId ? 'Sauver le troll' : 'Lâcher le troll' }}
       </button>
     </div>
   </form>

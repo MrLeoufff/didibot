@@ -39,9 +39,9 @@ export class LoginComponent {
         if (typeof message === 'string' && message.trim()) {
           this.error.set(message);
         } else if (status === 401 || status === 400) {
-          this.error.set('Identifiants invalides');
+          this.error.set('Nan. Mauvais combo. Réessaie, champion.');
         } else if (!status) {
-          this.error.set('Impossible de joindre l’API. Réessaie dans un instant.');
+          this.error.set('L’API ne répond pas. La JVM a peut-être pris un café.');
         } else {
           this.error.set(`Erreur de connexion (${status})`);
         }

@@ -1,7 +1,7 @@
 <header class="page-header">
   <div>
-    <p class="eyebrow">Discord</p>
-    <h1>Serveurs</h1>
+    <p class="eyebrow">Carte</p>
+    <h1>Territoires</h1>
   </div>
 </header>
 
@@ -10,11 +10,11 @@
 }
 
 <section class="panel form-panel">
-  <h2>Ajouter un serveur</h2>
+  <h2>Annexer un serveur</h2>
   <form [formGroup]="form" (ngSubmit)="create()">
     <label>
       Nom
-      <input formControlName="name" placeholder="Mon serveur" />
+      <input formControlName="name" placeholder="Le salon où C# ose encore parler" />
     </label>
     <label>
       Guild ID
@@ -22,15 +22,15 @@
     </label>
     <label class="checkbox">
       <input type="checkbox" formControlName="enabled" />
-      Actif
+      Terrain de chasse ouvert
     </label>
-    <button class="btn" type="submit">Enregistrer</button>
+    <button class="btn" type="submit">Planter le drapeau</button>
   </form>
 </section>
 
 <section class="panel">
   @if (loading()) {
-    <p class="muted">Chargement…</p>
+    <p class="muted">On compte les guildes…</p>
   } @else {
     <div class="table-wrap">
       <table>
@@ -48,19 +48,19 @@
               <td>{{ serverLabel(server.name, server.discordGuildId) }}</td>
               <td>
                 @if (isGlobal(server.discordGuildId)) {
-                  <code>0</code> <span class="muted">global</span>
+                  <code>0</code> <span class="muted">partout</span>
                 } @else {
                   <code>{{ server.discordGuildId }}</code>
                 }
               </td>
               <td>
                 <span class="badge" [class.on]="server.enabled" [class.off]="!server.enabled">
-                  {{ server.enabled ? 'Actif' : 'Inactif' }}
+                  {{ server.enabled ? 'Ouvert' : 'Fermé' }}
                 </span>
               </td>
               <td class="actions">
                 <button type="button" class="btn ghost" (click)="toggle(server)">
-                  {{ server.enabled ? 'Désactiver' : 'Activer' }}
+                  {{ server.enabled ? 'Fermer' : 'Ouvrir' }}
                 </button>
               </td>
             </tr>

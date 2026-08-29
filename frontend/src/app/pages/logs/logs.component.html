@@ -1,9 +1,9 @@
 <header class="page-header">
   <div>
-    <p class="eyebrow">Historique</p>
-    <h1>Logs</h1>
+    <p class="eyebrow">Caméra de surveillance</p>
+    <h1>Preuves</h1>
   </div>
-  <p class="muted">{{ total() }} entrée(s)</p>
+  <p class="muted">{{ total() }} troll{{ total() > 1 ? 's' : '' }} enregistré{{ total() > 1 ? 's' : '' }}</p>
 </header>
 
 @if (error()) {
@@ -17,13 +17,13 @@
       <input
         type="search"
         (input)="onSearch($event)"
-        placeholder="Utilisateur, trigger, motif, salon, réponse…"
+        placeholder="Un coupable, une punchline, un salon…"
       />
     </label>
     <label class="guild-filter">
       <span class="sr-only">Serveur</span>
       <select [value]="guildId()" (change)="onGuildChange($event)">
-        <option value="">Tous les serveurs</option>
+        <option value="">Tous les territoires</option>
         @for (server of servers(); track server.id) {
           <option [value]="server.discordGuildId">{{ serverName(server.discordGuildId) }}</option>
         }
@@ -32,13 +32,13 @@
   </div>
 
   @if (loading()) {
-    <p class="muted">Chargement…</p>
+    <p class="muted">On rewind la VHS…</p>
   } @else if (logs().length === 0) {
     <p class="muted">
       @if (query() || guildId()) {
-        Aucun déclenchement ne correspond à ce filtre.
+        Filtre trop sévère. Même Chuck Norris n’y est pas.
       } @else {
-        Aucun déclenchement enregistré.
+        Silence radio. Personne n’a encore déclenché DidiBot.
       }
     </p>
   } @else {
@@ -49,10 +49,10 @@
             <th>Heure</th>
             <th>Serveur</th>
             <th>Salon</th>
-            <th>Utilisateur</th>
+            <th>Coupable</th>
             <th>Motif</th>
-            <th>Trigger</th>
-            <th>Réponse</th>
+            <th>Punchline</th>
+            <th>Réplique</th>
           </tr>
         </thead>
         <tbody>
@@ -74,11 +74,11 @@
     @if (totalPages() > 1) {
       <div class="pager">
         <button type="button" class="btn ghost" (click)="prev()" [disabled]="page() === 0">
-          Précédent
+          Plus vieux
         </button>
         <span class="muted">Page {{ page() + 1 }} / {{ totalPages() }}</span>
         <button type="button" class="btn ghost" (click)="next()" [disabled]="page() + 1 >= totalPages()">
-          Suivant
+          Plus frais
         </button>
       </div>
     }

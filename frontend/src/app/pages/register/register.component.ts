@@ -32,7 +32,7 @@ export class RegisterComponent {
 
     const { username, password, confirmPassword } = this.form.getRawValue();
     if (password !== confirmPassword) {
-      this.error.set('Les mots de passe ne correspondent pas');
+      this.error.set('Les mots de passe ne matchent pas. Même la JVM refuse.');
       return;
     }
 
@@ -42,9 +42,7 @@ export class RegisterComponent {
 
     this.api.register({ username: username.trim(), password }).subscribe({
       next: () => {
-        this.success.set(
-          'Demande envoyée. Tu pourras te connecter seulement après acceptation par un admin.'
-        );
+        this.success.set('Dossier reçu. Un humain (pas DidiBot) doit encore te valider.');
         this.form.reset({ username: '', password: '', confirmPassword: '' });
         this.loading.set(false);
       },

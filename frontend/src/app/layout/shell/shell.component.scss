@@ -1,51 +1,48 @@
 .shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 248px 1fr;
 }
 
 .sidebar {
-  padding: 1.75rem 1.25rem;
+  padding: 1.5rem 1.15rem;
   border-right: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface) 88%, var(--ink) 12%);
+  background: color-mix(in srgb, #0e0f16 82%, var(--blurple) 8%);
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.75rem;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.8rem;
 }
 
 .brand-mark {
-  width: 2.6rem;
-  height: 2.6rem;
-  display: grid;
-  place-items: center;
-  border-radius: 0.7rem;
-  background: var(--accent);
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  width: 2.85rem;
+  height: 2.85rem;
+  border-radius: 0.85rem;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+  background: #0e0f14;
 }
 
 .brand-name {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.1;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.05;
 }
 
 .brand-sub {
-  margin: 0.15rem 0 0;
-  color: var(--muted);
-  font-size: 0.8rem;
+  margin: 0.2rem 0 0;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
 }
 
 nav {
@@ -56,10 +53,10 @@ nav {
 
 nav a {
   padding: 0.7rem 0.85rem;
-  border-radius: 0.55rem;
+  border-radius: 0.75rem;
   color: var(--ink);
   text-decoration: none;
-  font-weight: 550;
+  font-weight: 650;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -68,24 +65,29 @@ nav a {
 }
 
 nav a:hover {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  transform: translateX(2px);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  transform: translateX(3px);
 }
 
 nav a.active {
   background: var(--accent);
-  color: var(--ink);
+  color: #14160c;
 }
 
 .nav-badge {
   min-width: 1.35rem;
   padding: 0.1rem 0.4rem;
   border-radius: 999px;
-  background: var(--accent-strong);
-  color: #fff;
+  background: #14160c;
+  color: var(--accent);
   font-size: 0.72rem;
   font-weight: 700;
   text-align: center;
+}
+
+nav a.active .nav-badge {
+  background: #14160c;
+  color: var(--accent);
 }
 
 .content {
@@ -98,6 +100,10 @@ nav a.active {
   gap: 0.55rem;
 }
 
+.user {
+  font-weight: 600;
+}
+
 .muted-link {
   color: var(--muted);
   font-size: 0.85rem;
@@ -105,7 +111,7 @@ nav a.active {
 }
 
 .muted-link:hover {
-  color: var(--ink);
+  color: var(--accent);
 }
 
 @media (max-width: 860px) {

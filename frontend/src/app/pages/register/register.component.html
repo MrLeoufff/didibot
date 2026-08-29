@@ -1,8 +1,9 @@
 <div class="register-page">
   <form class="panel form" [formGroup]="form" (ngSubmit)="submit()">
-    <p class="eyebrow">DidiBot</p>
-    <h1>Créer un compte</h1>
-    <p class="muted">Ta demande restera en attente jusqu’à acceptation par un admin.</p>
+    <img class="mascot" src="/didibot.png" width="72" height="72" alt="DidiBot" />
+    <p class="eyebrow">Recrutement</p>
+    <h1>Rejoindre la team troll</h1>
+    <p class="muted">Un admin validera. DidiBot, lui, t’a déjà jugé.</p>
 
     @if (error()) {
       <p class="banner error">{{ error() }}</p>
@@ -13,7 +14,7 @@
 
     <label>
       Pseudo
-      <input formControlName="username" autocomplete="username" />
+      <input formControlName="username" autocomplete="username" placeholder="genre Chuck Norris" />
     </label>
 
     <label>
@@ -22,14 +23,14 @@
     </label>
 
     <label>
-      Confirmer le mot de passe
+      Encore une fois, pour la JVM
       <input type="password" formControlName="confirmPassword" autocomplete="new-password" />
     </label>
 
     <button class="btn" type="submit" [disabled]="loading()">
-      {{ loading() ? 'Envoi…' : 'Demander un compte' }}
+      {{ loading() ? 'Dossier en cours…' : 'Postuler au QG' }}
     </button>
 
-    <a class="link" routerLink="/login">Déjà un compte ? Se connecter</a>
+    <a class="link" routerLink="/login">Déjà dedans ? Connexion</a>
   </form>
 </div>
