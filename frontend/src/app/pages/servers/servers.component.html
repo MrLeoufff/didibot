@@ -45,8 +45,14 @@
         <tbody>
           @for (server of servers(); track server.id) {
             <tr>
-              <td>{{ server.name }}</td>
-              <td><code>{{ server.discordGuildId }}</code></td>
+              <td>{{ serverLabel(server.name, server.discordGuildId) }}</td>
+              <td>
+                @if (isGlobal(server.discordGuildId)) {
+                  <code>0</code> <span class="muted">global</span>
+                } @else {
+                  <code>{{ server.discordGuildId }}</code>
+                }
+              </td>
               <td>
                 <span class="badge" [class.on]="server.enabled" [class.off]="!server.enabled">
                   {{ server.enabled ? 'Actif' : 'Inactif' }}

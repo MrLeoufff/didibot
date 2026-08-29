@@ -13,6 +13,7 @@ import fr.dwg.discordbot.entity.Trigger;
 import fr.dwg.discordbot.entity.TriggerChannel;
 import fr.dwg.discordbot.entity.TriggerResponse;
 import fr.dwg.discordbot.entity.TriggerStatus;
+import fr.dwg.discordbot.entity.TriggerType;
 import fr.dwg.discordbot.exception.BadRequestException;
 import fr.dwg.discordbot.exception.ResourceNotFoundException;
 import fr.dwg.discordbot.repository.TriggerRepository;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -65,8 +67,8 @@ public class TriggerService {
 
     @Transactional
     public TriggerDto create(TriggerRequest request) {
-        validateAdminRequest(request);
         DiscordServer server = resolveServer(request.getDiscordServerId(), request.getDiscordGuildId());
+        validateAdminRequest(request, server, null);
 
         Trigger trigger = new Trigger();
         applyRequest(trigger, request, server);
@@ -134,9 +136,9 @@ public class TriggerService {
 
     @Transactional
     public TriggerDto update(Long id, TriggerRequest request) {
-        validateAdminRequest(request);
         Trigger trigger = getDetailed(id);
         DiscordServer server = resolveServer(request.getDiscordServerId(), request.getDiscordGuildId());
+        validateAdminRequest(request, server, id);
 
         applyRequest(trigger, request, server);
         trigger.clearResponses();
@@ -145,6 +147,50 @@ public class TriggerService {
         applyChannels(trigger, request.getChannelIds(), request.getChannelScope());
 
         return toDto(trigger);
+    }
+
+    @Transactional
+    public List<TriggerDto> copyToAllServers(Long id) {
+        Trigger source = getDetailed(id);
+        if (source.getDiscordServer() == null) {
+            throw new BadRequestException("Le trigger n'est rattaché à aucun serveur");
+        }
+        List<TriggerDto> created = new ArrayList<>();
+        for (DiscordServer server : serverService.findAllEntities()) {
+            if (server.getId().equals(source.getDiscordServer().getId())) {
+                continue;
+            }
+            if (TriggerScopeService.GLOBAL_GUILD_ID.equals(server.getDiscordGuildId())) {
+                continue;
+            }
+            if (findDuplicate(server.getId(), source.getType(), source.getPattern(), null) != null) {
+                continue;
+            }
+            Trigger copy = new Trigger();
+            copy.setName(source.getName());
+            copy.setPattern(source.getPattern());
+            copy.setType(source.getType());
+            copy.setEnabled(source.isEnabled() && source.getStatus() == TriggerStatus.APPROVED);
+            copy.setStatus(source.getStatus());
+            copy.setCooldownSeconds(source.getCooldownSeconds());
+            copy.setChannelScope(source.getChannelScope());
+            copy.setDiscordServer(server);
+            copy.setReviewedAt(Instant.now());
+            for (TriggerResponse response : source.getResponses()) {
+                TriggerResponse clone = new TriggerResponse();
+                clone.setContent(response.getContent());
+                clone.setEnabled(response.isEnabled());
+                clone.setRarity(response.getRarity() == null ? ResponseRarity.NORMAL : response.getRarity());
+                copy.addResponse(clone);
+            }
+            for (TriggerChannel channel : source.getChannels()) {
+                TriggerChannel clone = new TriggerChannel();
+                clone.setDiscordChannelId(channel.getDiscordChannelId());
+                copy.addChannel(clone);
+            }
+            created.add(toDto(triggerRepository.save(copy)));
+        }
+        return created;
     }
 
     @Transactional
@@ -185,7 +231,7 @@ public class TriggerService {
         response.setTrigger(null);
     }
 
-    private void validateAdminRequest(TriggerRequest request) {
+    private void validateAdminRequest(TriggerRequest request, DiscordServer server, Long excludeId) {
         if (!patternMatcherService.isValidPattern(request.getType(), request.getPattern())) {
             throw new BadRequestException("Motif invalide pour le type " + request.getType());
         }
@@ -198,6 +244,24 @@ public class TriggerService {
                 && (request.getChannelIds() == null || request.getChannelIds().isEmpty())) {
             throw new BadRequestException("Des salons sont requis pour le scope " + scope);
         }
+        Trigger duplicate = findDuplicate(server.getId(), request.getType(), request.getPattern(), excludeId);
+        if (duplicate != null) {
+            throw new BadRequestException(
+                    "Un trigger « " + duplicate.getName() + " » utilise déjà ce motif sur "
+                            + server.getName()
+            );
+        }
+    }
+
+    private Trigger findDuplicate(Long serverId, TriggerType type, String pattern, Long excludeId) {
+        if (serverId == null || type == null || pattern == null || pattern.isBlank()) {
+            return null;
+        }
+        return triggerRepository.findByDiscordServer_IdAndTypeAndPatternIgnoreCase(serverId, type, pattern.trim())
+                .stream()
+                .filter(existing -> excludeId == null || !excludeId.equals(existing.getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     private DiscordServer resolveServer(Long discordServerId, String discordGuildId) {

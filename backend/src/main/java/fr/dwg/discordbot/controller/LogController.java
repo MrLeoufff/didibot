@@ -24,8 +24,9 @@ public class LogController {
     @GetMapping
     public Page<TriggerExecutionDto> findAll(
             @RequestParam(required = false) String guildId,
-            @PageableDefault(size = 50, sort = "executedAt", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(required = false) String q,
+            @PageableDefault(size = 25, sort = "executedAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return triggerExecutionService.findAll(guildId, pageable);
+        return triggerExecutionService.findAll(guildId, q, pageable);
     }
 }

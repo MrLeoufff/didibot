@@ -42,9 +42,9 @@ class PatternMatcherServiceTest {
 
     @Test
     void regexMatchesWordBoundary() {
-        Trigger trigger = trigger(TriggerType.REGEX, "(?i)\\bc#\\b");
-        assertTrue(service.matches(trigger, "J'aime C# vraiment"));
-        assertFalse(service.matches(trigger, "abc#def"));
+        Trigger trigger = trigger(TriggerType.REGEX, "(?i)\\bjava\\b");
+        assertTrue(service.matches(trigger, "J'aime Java vraiment"));
+        assertFalse(service.matches(trigger, "javascript"));
     }
 
     private Trigger trigger(TriggerType type, String pattern) {

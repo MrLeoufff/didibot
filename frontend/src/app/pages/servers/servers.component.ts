@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DiscordServer } from '../../core/models/api.models';
 import { ApiService } from '../../core/services/api.service';
+import { isGlobalGuild, serverDisplayName } from '../../core/utils/server-label';
 
 @Component({
   selector: 'app-servers',
@@ -17,6 +18,8 @@ export class ServersComponent implements OnInit {
   readonly servers = signal<DiscordServer[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+  readonly serverLabel = serverDisplayName;
+  readonly isGlobal = isGlobalGuild;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],

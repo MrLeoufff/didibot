@@ -26,6 +26,11 @@ public class ServerService {
     }
 
     @Transactional(readOnly = true)
+    public List<DiscordServer> findAllEntities() {
+        return discordServerRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
     public DiscordServerDto findById(Long id) {
         return toDto(getEntity(id));
     }

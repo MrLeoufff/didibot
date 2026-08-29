@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   DiscordServer,
   ResponseRarity,
+  Trigger,
   TriggerRequest,
   TriggerType,
 } from '../../core/models/api.models';
@@ -11,6 +13,7 @@ import { TRIGGER_TYPE_HINTS, TRIGGER_TYPE_LABELS } from '../../core/models/trigg
 import { ApiService } from '../../core/services/api.service';
 import { apiErrorMessage } from '../../core/utils/http-error';
 import { matchesPattern } from '../../core/utils/pattern-match';
+import { isGlobalGuild, serverOptionLabel } from '../../core/utils/server-label';
 
 @Component({
   selector: 'app-trigger-form',
@@ -24,11 +27,16 @@ export class TriggerFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly servers = signal<DiscordServer[]>([]);
+  readonly existingTriggers = signal<Trigger[]>([]);
   readonly saving = signal(false);
+  readonly copying = signal(false);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly copyMessage = signal<string | null>(null);
+  readonly duplicateWarning = signal<string | null>(null);
   readonly testMessage = signal('');
   readonly types: TriggerType[] = ['CONTAINS', 'EXACT', 'STARTS_WITH', 'REGEX'];
   readonly typeLabels = TRIGGER_TYPE_LABELS;
@@ -37,6 +45,7 @@ export class TriggerFormComponent implements OnInit {
     { value: 'NORMAL', label: 'Normale' },
     { value: 'RARE', label: 'Rare (~1 %)' },
   ];
+  readonly serverOptionLabel = serverOptionLabel;
 
   editId: number | null = null;
 
@@ -57,6 +66,10 @@ export class TriggerFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshDuplicateWarning());
+
     this.api.getServers().subscribe({
       next: (servers) => {
         this.servers.set(servers);
@@ -65,6 +78,13 @@ export class TriggerFormComponent implements OnInit {
         }
       },
       error: (err) => this.error.set(apiErrorMessage(err, 'Impossible de charger les serveurs.')),
+    });
+
+    this.api.getTriggers().subscribe({
+      next: (triggers) => {
+        this.existingTriggers.set(triggers);
+        this.refreshDuplicateWarning();
+      },
     });
 
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -92,6 +112,7 @@ export class TriggerFormComponent implements OnInit {
             channelIdsText: trigger.channelIds.join(', '),
           });
           this.loading.set(false);
+          this.refreshDuplicateWarning();
         },
         error: (err) => {
           this.error.set(apiErrorMessage(err, 'Trigger introuvable.'));
@@ -122,10 +143,13 @@ export class TriggerFormComponent implements OnInit {
     return !!control && control.invalid && (control.touched || control.dirty);
   }
 
-  isPlaceholderServer(): boolean {
+  isGlobalServer(): boolean {
     const id = this.form.controls.discordServerId.value;
+    if (id == null) {
+      return false;
+    }
     const server = this.servers().find((item) => item.id === id);
-    return !server || server.discordGuildId === '0';
+    return !!server && isGlobalGuild(server.discordGuildId);
   }
 
   matchPreview(): 'empty' | 'yes' | 'no' | 'invalid' {
@@ -144,6 +168,43 @@ export class TriggerFormComponent implements OnInit {
 
   onTestInput(event: Event): void {
     this.testMessage.set((event.target as HTMLInputElement).value);
+  }
+
+  copyToServers(): void {
+    if (!this.editId) {
+      return;
+    }
+    if (
+      !confirm(
+        'Dupliquer ce trigger sur tous les autres serveurs Discord ? Les serveurs qui ont déjà le même motif seront ignorés.'
+      )
+    ) {
+      return;
+    }
+    this.copying.set(true);
+    this.copyMessage.set(null);
+    this.error.set(null);
+    this.api.copyTriggerToServers(this.editId).subscribe({
+      next: (created) => {
+        this.copying.set(false);
+        if (created.length === 0) {
+          this.copyMessage.set(
+            'Aucun serveur à mettre à jour : le motif existe déjà partout, ou il n’y a pas d’autre serveur.'
+          );
+        } else {
+          this.copyMessage.set(
+            `Copié sur ${created.length} serveur${created.length > 1 ? 's' : ''}.`
+          );
+        }
+        this.api.getTriggers().subscribe({
+          next: (triggers) => this.existingTriggers.set(triggers),
+        });
+      },
+      error: (err) => {
+        this.copying.set(false);
+        this.error.set(apiErrorMessage(err, 'Duplication impossible.'));
+      },
+    });
   }
 
   submit(): void {
@@ -206,6 +267,28 @@ export class TriggerFormComponent implements OnInit {
     });
   }
 
+  private refreshDuplicateWarning(): void {
+    const serverId = this.form.controls.discordServerId.value;
+    const type = this.form.controls.type.value;
+    const pattern = this.form.controls.pattern.value.trim();
+    if (!serverId || !pattern) {
+      this.duplicateWarning.set(null);
+      return;
+    }
+    const duplicate = this.existingTriggers().find(
+      (trigger) =>
+        trigger.discordServerId === serverId &&
+        trigger.type === type &&
+        trigger.pattern.trim().toLowerCase() === pattern.toLowerCase() &&
+        trigger.id !== this.editId
+    );
+    this.duplicateWarning.set(
+      duplicate
+        ? `Un trigger « ${duplicate.name} » utilise déjà ce motif sur ce serveur.`
+        : null
+    );
+  }
+
   private responseGroup(content = '', rarity: ResponseRarity = 'NORMAL') {
     return this.fb.nonNullable.group({
       content: [content, Validators.required],
@@ -222,8 +305,8 @@ export class TriggerFormComponent implements OnInit {
     }
     control.setValidators(Validators.required);
     const preferred =
-      servers.find((server) => server.discordGuildId !== '0' && server.enabled) ??
-      servers.find((server) => server.discordGuildId !== '0') ??
+      servers.find((server) => !isGlobalGuild(server.discordGuildId) && server.enabled) ??
+      servers.find((server) => !isGlobalGuild(server.discordGuildId)) ??
       servers[0];
     this.form.patchValue({ discordServerId: preferred.id });
     control.updateValueAndValidity();

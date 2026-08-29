@@ -11,16 +11,43 @@
 }
 
 <section class="panel">
+  <div class="toolbar">
+    <label class="search">
+      <span class="sr-only">Rechercher</span>
+      <input
+        type="search"
+        (input)="onSearch($event)"
+        placeholder="Utilisateur, trigger, motif, salon, réponse…"
+      />
+    </label>
+    <label class="guild-filter">
+      <span class="sr-only">Serveur</span>
+      <select [value]="guildId()" (change)="onGuildChange($event)">
+        <option value="">Tous les serveurs</option>
+        @for (server of servers(); track server.id) {
+          <option [value]="server.discordGuildId">{{ serverName(server.discordGuildId) }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
   @if (loading()) {
     <p class="muted">Chargement…</p>
   } @else if (logs().length === 0) {
-    <p class="muted">Aucun déclenchement enregistré.</p>
+    <p class="muted">
+      @if (query() || guildId()) {
+        Aucun déclenchement ne correspond à ce filtre.
+      } @else {
+        Aucun déclenchement enregistré.
+      }
+    </p>
   } @else {
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
             <th>Heure</th>
+            <th>Serveur</th>
             <th>Salon</th>
             <th>Utilisateur</th>
             <th>Motif</th>
@@ -32,6 +59,7 @@
           @for (log of logs(); track log.id) {
             <tr>
               <td>{{ log.executedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+              <td>{{ serverName(log.discordGuildId) }}</td>
               <td>#{{ log.channelName || log.channelId }}</td>
               <td>{{ log.username }}</td>
               <td><code>{{ log.matchedPattern }}</code></td>
@@ -42,5 +70,17 @@
         </tbody>
       </table>
     </div>
+
+    @if (totalPages() > 1) {
+      <div class="pager">
+        <button type="button" class="btn ghost" (click)="prev()" [disabled]="page() === 0">
+          Précédent
+        </button>
+        <span class="muted">Page {{ page() + 1 }} / {{ totalPages() }}</span>
+        <button type="button" class="btn ghost" (click)="next()" [disabled]="page() + 1 >= totalPages()">
+          Suivant
+        </button>
+      </div>
+    }
   }
 </section>

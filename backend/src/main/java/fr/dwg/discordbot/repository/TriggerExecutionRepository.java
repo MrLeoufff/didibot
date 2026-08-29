@@ -4,10 +4,44 @@ import fr.dwg.discordbot.entity.TriggerExecution;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TriggerExecutionRepository extends JpaRepository<TriggerExecution, Long> {
 
     Page<TriggerExecution> findAllByOrderByExecutedAtDesc(Pageable pageable);
 
     Page<TriggerExecution> findByDiscordGuildIdOrderByExecutedAtDesc(String discordGuildId, Pageable pageable);
+
+    @Query(
+            value = """
+                    SELECT e FROM TriggerExecution e
+                    WHERE (:guildId IS NULL OR :guildId = '' OR e.discordGuildId = :guildId)
+                      AND (
+                            :q IS NULL OR :q = ''
+                            OR LOWER(e.username) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(e.triggerName) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(e.matchedPattern) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(COALESCE(e.channelName, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(COALESCE(e.responseContent, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                      )
+                    """,
+            countQuery = """
+                    SELECT COUNT(e) FROM TriggerExecution e
+                    WHERE (:guildId IS NULL OR :guildId = '' OR e.discordGuildId = :guildId)
+                      AND (
+                            :q IS NULL OR :q = ''
+                            OR LOWER(e.username) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(e.triggerName) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(e.matchedPattern) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(COALESCE(e.channelName, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(COALESCE(e.responseContent, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                      )
+                    """
+    )
+    Page<TriggerExecution> search(
+            @Param("guildId") String guildId,
+            @Param("q") String query,
+            Pageable pageable
+    );
 }

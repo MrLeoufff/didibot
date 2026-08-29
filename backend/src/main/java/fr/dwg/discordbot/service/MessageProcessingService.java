@@ -29,6 +29,7 @@ public class MessageProcessingService {
     private final ServerService serverService;
     private final BotImageService botImageService;
     private final DiscordProperties discordProperties;
+    private final TriggerScopeService triggerScopeService;
 
     public MessageProcessingService(
             TriggerService triggerService,
@@ -39,7 +40,8 @@ public class MessageProcessingService {
             TriggerExecutionService triggerExecutionService,
             ServerService serverService,
             BotImageService botImageService,
-            DiscordProperties discordProperties
+            DiscordProperties discordProperties,
+            TriggerScopeService triggerScopeService
     ) {
         this.triggerService = triggerService;
         this.patternMatcherService = patternMatcherService;
@@ -50,6 +52,16 @@ public class MessageProcessingService {
         this.serverService = serverService;
         this.botImageService = botImageService;
         this.discordProperties = discordProperties;
+        this.triggerScopeService = triggerScopeService;
+    }
+
+    private List<Trigger> resolveActiveTriggers(String guildId) {
+        List<Trigger> local = triggerService.findActiveByGuildId(guildId);
+        if (TriggerScopeService.GLOBAL_GUILD_ID.equals(guildId)) {
+            return local;
+        }
+        List<Trigger> global = triggerService.findActiveByGuildId(TriggerScopeService.GLOBAL_GUILD_ID);
+        return triggerScopeService.mergeLocalAndGlobal(local, global);
     }
 
     @Transactional
@@ -60,11 +72,7 @@ public class MessageProcessingService {
 
         serverService.syncGuild(message.guildId(), message.guildName());
 
-        List<Trigger> triggers = triggerService.findActiveByGuildId(message.guildId());
-        if (triggers.isEmpty()) {
-            // Fallback : règles du serveur placeholder (guildId "0") pour démarrer rapidement
-            triggers = triggerService.findActiveByGuildId("0");
-        }
+        List<Trigger> triggers = resolveActiveTriggers(message.guildId());
 
         // Motifs plus longs d'abord (ex. JavaScript avant Java, GitHub avant Git)
         triggers = triggers.stream()

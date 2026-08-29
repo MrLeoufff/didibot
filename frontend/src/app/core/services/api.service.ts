@@ -88,6 +88,10 @@ export class ApiService {
     return this.http.patch<Trigger>(`${this.base}/triggers/${id}/reject`, {});
   }
 
+  copyTriggerToServers(id: number): Observable<Trigger[]> {
+    return this.http.post<Trigger[]>(`${this.base}/triggers/${id}/copy-to-servers`, {});
+  }
+
   addResponse(triggerId: number, content: string): Observable<TriggerResponse> {
     return this.http.post<TriggerResponse>(`${this.base}/triggers/${triggerId}/responses`, {
       content,
@@ -119,10 +123,16 @@ export class ApiService {
     return this.http.patch<DiscordServer>(`${this.base}/servers/${id}/disable`, {});
   }
 
-  getLogs(page = 0, size = 50, guildId?: string): Observable<Page<TriggerExecution>> {
-    let params = new HttpParams().set('page', page).set('size', size);
+  getLogs(page = 0, size = 25, guildId?: string, q?: string): Observable<Page<TriggerExecution>> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size)
+      .set('sort', 'executedAt,desc');
     if (guildId) {
       params = params.set('guildId', guildId);
+    }
+    if (q && q.trim()) {
+      params = params.set('q', q.trim());
     }
     return this.http.get<Page<TriggerExecution>>(`${this.base}/logs`, { params });
   }

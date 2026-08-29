@@ -4,6 +4,7 @@ import { Trigger, TriggerStatus } from '../../core/models/api.models';
 import { TRIGGER_STATUS_LABELS, TRIGGER_TYPE_LABELS } from '../../core/models/trigger.labels';
 import { ApiService } from '../../core/services/api.service';
 import { apiErrorMessage } from '../../core/utils/http-error';
+import { serverDisplayName } from '../../core/utils/server-label';
 
 type StatusFilter = 'ALL' | TriggerStatus | 'ACTIVE' | 'INACTIVE';
 
@@ -25,6 +26,7 @@ export class TriggerListComponent implements OnInit {
 
   readonly typeLabels = TRIGGER_TYPE_LABELS;
   readonly statusLabels = TRIGGER_STATUS_LABELS;
+  readonly serverLabel = serverDisplayName;
 
   readonly pending = computed(() => this.triggers().filter((t) => t.status === 'PENDING'));
 
@@ -45,6 +47,7 @@ export class TriggerListComponent implements OnInit {
           trigger.name.toLowerCase().includes(q) ||
           trigger.pattern.toLowerCase().includes(q) ||
           trigger.discordServerName.toLowerCase().includes(q) ||
+          serverDisplayName(trigger.discordServerName, trigger.discordGuildId).toLowerCase().includes(q) ||
           trigger.type.toLowerCase().includes(q)
         );
       });

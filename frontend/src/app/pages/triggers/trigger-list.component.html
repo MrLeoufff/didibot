@@ -100,7 +100,7 @@
                 </td>
                 <td><code>{{ trigger.pattern }}</code></td>
                 <td>{{ typeLabels[trigger.type] }}</td>
-                <td>{{ trigger.discordServerName }}</td>
+                <td>{{ serverLabel(trigger.discordServerName, trigger.discordGuildId) }}</td>
                 <td>{{ trigger.responses.length }}</td>
                 <td>
                   <span class="badge" [class.on]="trigger.enabled" [class.off]="!trigger.enabled">

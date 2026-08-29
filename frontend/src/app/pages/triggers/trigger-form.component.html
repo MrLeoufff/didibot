@@ -87,12 +87,7 @@
             <option [ngValue]="null" disabled>Choisir un serveur</option>
             @for (server of servers(); track server.id) {
               <option [ngValue]="server.id">
-                {{ server.name }}
-                @if (server.discordGuildId === '0') {
-                  (fallback — ne s’applique pas si le serveur a déjà des triggers)
-                } @else {
-                  ({{ server.discordGuildId }})
-                }
+                {{ serverOptionLabel(server.name, server.discordGuildId) }}
               </option>
             }
           </select>
@@ -113,13 +108,17 @@
 
       @if (servers().length === 0) {
         <p class="banner warn">
-          Aucun serveur enregistré. Ajoute d’abord le serveur Discord dans l’onglet Serveurs, sinon la règle ira sur le fallback.
+          Aucun serveur enregistré. Ajoute d’abord le serveur Discord dans l’onglet Serveurs.
         </p>
-      } @else if (isPlaceholderServer()) {
+      } @else if (isGlobalServer()) {
         <p class="banner warn">
-          Le serveur fallback n’est utilisé que si le vrai serveur Discord n’a encore aucun trigger.
-          Choisis le serveur réel pour que la règle réponde dans le salon.
+          Cette règle globale s’applique à tous les serveurs. Un trigger local avec le même motif
+          remplace celle-ci sur ce serveur uniquement.
         </p>
+      }
+
+      @if (duplicateWarning()) {
+        <p class="banner warn">{{ duplicateWarning() }}</p>
       }
 
       @if (form.controls.channelScope.value !== 'ALL') {
@@ -174,8 +173,17 @@
       }
     </section>
 
+    @if (copyMessage()) {
+      <p class="banner ok">{{ copyMessage() }}</p>
+    }
+
     <div class="form-actions">
-      <button class="btn" type="submit" [disabled]="saving()">
+      @if (editId) {
+        <button type="button" class="btn ghost" (click)="copyToServers()" [disabled]="copying() || saving()">
+          {{ copying() ? 'Duplication…' : 'Dupliquer sur tous les serveurs' }}
+        </button>
+      }
+      <button class="btn" type="submit" [disabled]="saving() || copying()">
         {{ saving() ? 'Enregistrement…' : editId ? 'Enregistrer les modifications' : 'Créer le trigger' }}
       </button>
     </div>

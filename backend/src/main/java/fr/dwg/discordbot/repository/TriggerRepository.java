@@ -1,6 +1,7 @@
 package fr.dwg.discordbot.repository;
 
 import fr.dwg.discordbot.entity.Trigger;
+import fr.dwg.discordbot.entity.TriggerType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -53,5 +54,11 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
             WHERE t.discordServer.id = :discordServerId
             """)
     List<Trigger> findByDiscordServerId(@Param("discordServerId") Long discordServerId);
+
+    List<Trigger> findByDiscordServer_IdAndTypeAndPatternIgnoreCase(
+            Long discordServerId,
+            TriggerType type,
+            String pattern
+    );
 }
 

@@ -89,6 +89,11 @@ public class TriggerController {
         return triggerService.reject(id);
     }
 
+    @PostMapping("/{id}/copy-to-servers")
+    public List<TriggerDto> copyToServers(@PathVariable Long id) {
+        return triggerService.copyToAllServers(id);
+    }
+
     @PostMapping("/{id}/responses")
     @ResponseStatus(HttpStatus.CREATED)
     public TriggerResponseDto addResponse(

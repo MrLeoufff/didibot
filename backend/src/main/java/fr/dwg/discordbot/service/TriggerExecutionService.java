@@ -38,11 +38,10 @@ public class TriggerExecutionService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TriggerExecutionDto> findAll(String guildId, Pageable pageable) {
-        Page<TriggerExecution> page = (guildId == null || guildId.isBlank())
-                ? triggerExecutionRepository.findAllByOrderByExecutedAtDesc(pageable)
-                : triggerExecutionRepository.findByDiscordGuildIdOrderByExecutedAtDesc(guildId, pageable);
-        return page.map(this::toDto);
+    public Page<TriggerExecutionDto> findAll(String guildId, String query, Pageable pageable) {
+        String guild = guildId == null || guildId.isBlank() ? null : guildId.trim();
+        String q = query == null || query.isBlank() ? null : query.trim();
+        return triggerExecutionRepository.search(guild, q, pageable).map(this::toDto);
     }
 
     private TriggerExecutionDto toDto(TriggerExecution execution) {

@@ -51,6 +51,27 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build -d
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 ```
 
+### Sauvegarde PostgreSQL
+
+Sur le serveur (`/opt/didibot`) :
+
+```bash
+chmod +x scripts/backup-postgres.sh
+./scripts/backup-postgres.sh
+```
+
+Le dump gzip va dans `backups/` (hors git). Les 14 plus récents sont conservés. À planifier en cron si besoin, par exemple tous les jours à 3 h :
+
+```bash
+0 3 * * * /opt/didibot/scripts/backup-postgres.sh
+```
+
+Les fichiers Flyway `*.sql` doivent rester en **LF** (voir `.gitattributes`) : un checksum CRLF casse les migrations déjà appliquées.
+
+### Angular
+
+Garder le frontend en **Angular 19**. Dependabot ignore les majeures `@angular/*` pour éviter un nouveau casse-build.
+
 ## DNS Hostinger (`dwg-dev.fr`)
 
 Dans **Hostinger → Domaines → dwg-dev.fr → DNS / Zone DNS**, créer :
@@ -95,6 +116,7 @@ JWT_SECRET=...
 - Discord : `/propose-trigger`
 - Les propositions restent en `PENDING` jusqu’à approbation admin
 - Événements rares : ~1 % des réponses (`DISCORD_RARE_EVENT_CHANCE`, défaut `0.01`)
+- Serveur **Global** (guild `0`) : la règle s’applique partout, sauf si le même motif existe déjà en local
 
 ## Discord
 
@@ -110,6 +132,7 @@ JWT_SECRET=...
 BotDiscord/
 ├── backend/                 # Spring Boot + JDA
 ├── frontend/                # Angular admin
+├── scripts/backup-postgres.sh
 ├── docker-compose.yml
 ├── docker-compose.dev.yml   # ports locaux
 ├── docker-compose.prod.yml  # réseau Docker `web` (Caddy)
