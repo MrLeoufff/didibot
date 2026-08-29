@@ -4,23 +4,44 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    open-pull-requests-limit: 1
+    groups:
+      frontend:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
     ignore:
-      - dependency-name: "@angular/*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@angular-devkit/*"
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: maven
     directory: /backend
     schedule:
       interval: weekly
+    open-pull-requests-limit: 1
+    groups:
+      backend:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: /backend
     schedule:
       interval: weekly
+    open-pull-requests-limit: 1
+    ignore:
+      - dependency-name: "eclipse-temurin"
+        update-types: ["version-update:semver-major"]
+      # Le tag Maven embarque le JDK : Dependabot passe de temurin-21 à 26.
+      - dependency-name: "maven"
 
   - package-ecosystem: docker
     directory: /frontend
     schedule:
       interval: weekly
+    open-pull-requests-limit: 1
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]

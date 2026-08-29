@@ -34,7 +34,18 @@
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
+    "karma-jasmine-html-reporter": "~2.3.0",
     "typescript": "~5.7.2"
+  },
+  "overrides": {
+    "postcss": "8.5.23",
+    "webpack-dev-server": "5.2.6",
+    "http-proxy-middleware": "3.0.7",
+    "serialize-javascript": "7.0.5",
+    "tar": "7.5.21",
+    "piscina": "4.9.3",
+    "@babel/core": "7.29.6",
+    "vite": "6.4.3",
+    "@sigstore/core": "3.2.1"
   }
 }
