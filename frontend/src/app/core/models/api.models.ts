@@ -1,6 +1,8 @@
-export type TriggerType = 'EXACT' | 'CONTAINS' | 'STARTS_WITH' | 'REGEX';
+export type TriggerType = 'EXACT' | 'CONTAINS' | 'STARTS_WITH' | 'REGEX' | 'GIF';
 export type ChannelScope = 'ALL' | 'INCLUDE' | 'EXCLUDE';
 export type TriggerStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type TriggerAction = 'REPLY' | 'REACT' | 'BOTH';
+export type CooldownScope = 'SERVER' | 'USER';
 
 export type ResponseRarity = 'NORMAL' | 'RARE';
 
@@ -30,6 +32,10 @@ export interface Trigger {
   proposedByDiscordId?: string | null;
   reviewedAt?: string | null;
   cooldownSeconds: number;
+  fireChance: number;
+  action: TriggerAction;
+  reactionEmoji?: string | null;
+  cooldownScope: CooldownScope;
   channelScope: ChannelScope;
   discordServerId: number;
   discordGuildId: string;
@@ -46,6 +52,10 @@ export interface TriggerRequest {
   type: TriggerType;
   enabled: boolean;
   cooldownSeconds: number;
+  fireChance: number;
+  action: TriggerAction;
+  reactionEmoji?: string | null;
+  cooldownScope: CooldownScope;
   channelScope: ChannelScope;
   discordServerId?: number | null;
   discordGuildId?: string | null;
@@ -68,6 +78,9 @@ export interface DiscordServer {
   discordGuildId: string;
   name: string;
   enabled: boolean;
+  welcomeEnabled?: boolean;
+  welcomeChannelId?: string | null;
+  welcomeMessage?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -140,4 +153,20 @@ export interface AppUser {
   status: UserStatus;
   requestedAt?: string | null;
   reviewedAt?: string | null;
+}
+
+export interface WelcomeSettings {
+  serverId: number;
+  name: string;
+  discordGuildId: string;
+  welcomeEnabled: boolean;
+  welcomeChannelId?: string | null;
+  welcomeMessage?: string | null;
+}
+
+export interface BotSettings {
+  avatarImageChance: number;
+  rareEventChance: number;
+  adminChannelId: string;
+  servers: WelcomeSettings[];
 }

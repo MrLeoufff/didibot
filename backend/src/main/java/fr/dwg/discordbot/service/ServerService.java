@@ -103,6 +103,9 @@ public class ServerService {
         dto.setDiscordGuildId(server.getDiscordGuildId());
         dto.setName(server.getName());
         dto.setEnabled(server.isEnabled());
+        dto.setWelcomeEnabled(server.isWelcomeEnabled());
+        dto.setWelcomeChannelId(server.getWelcomeChannelId());
+        dto.setWelcomeMessage(server.getWelcomeMessage());
         dto.setCreatedAt(server.getCreatedAt());
         dto.setUpdatedAt(server.getUpdatedAt());
         return dto;

@@ -79,11 +79,11 @@ Les identifiants se configurent dans `.env` (voir `.env.example`).
 ## Discord
 
 1. Créer une application bot
-2. Activer **Message Content Intent**
+2. Activer **Message Content Intent** (et **Server Members Intent** si tu veux l’accueil nouveau membre)
 3. Copier le **Bot Token** dans `.env`
-4. Inviter le bot (permissions Send Messages + Read Message History)
+4. Inviter le bot (permissions Send Messages + Read Message History + Add Reactions)
 5. Ne pas lancer deux instances avec le même token (`DISCORD_ENABLED=false` en local si la prod tourne)
-6. Optionnel : `DISCORD_ADMIN_CHANNEL_ID` pour notifier les nouvelles propositions dans un salon
+6. Optionnel : salon admin et chances d’avatar / rare se règlent dans le panel **Réglages** (plus besoin du `.env`)
 
 ## Structure
 

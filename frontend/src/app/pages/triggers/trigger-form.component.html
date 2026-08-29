@@ -29,7 +29,11 @@
       <h2>Quand frapper</h2>
       <label [class.invalid]="invalid('pattern')">
         Mot qui déclenche DidiBot
-        <input formControlName="pattern" placeholder="C#" />
+        <input
+          formControlName="pattern"
+          placeholder="C#"
+          [readOnly]="isGif()"
+        />
         @if (invalid('pattern')) {
           <span class="field-error">Sans motif, rien ne se passe. Comme un stand-up vide.</span>
         }
@@ -52,6 +56,42 @@
       </div>
       <p class="hint">{{ typeHints[form.controls.type.value] }}</p>
 
+      <div class="row">
+        <label>
+          Chance de frapper (%)
+          <input type="number" min="0" max="100" formControlName="fireChancePercent" />
+        </label>
+        <label>
+          Cooldown
+          <select formControlName="cooldownScope">
+            @for (scope of cooldownScopes; track scope.value) {
+              <option [value]="scope.value">{{ scope.label }}</option>
+            }
+          </select>
+        </label>
+      </div>
+      <p class="hint">
+        15 % = troll. 100 % = perroquet. « Par personne » évite qu’un spammeur fasse taire tout le salon.
+      </p>
+
+      <div class="row">
+        <label>
+          Action
+          <select formControlName="action">
+            @for (action of actions; track action.value) {
+              <option [value]="action.value">{{ action.label }}</option>
+            }
+          </select>
+        </label>
+        @if (form.controls.action.value !== 'REPLY') {
+          <label>
+            Emoji
+            <input formControlName="reactionEmoji" placeholder="👀" />
+          </label>
+        }
+      </div>
+
+      @if (!isGif()) {
       <div class="tester">
         <label>
           Tester un message Discord
@@ -76,6 +116,7 @@
           }
         }
       </div>
+      }
     </section>
 
     <section class="form-section">

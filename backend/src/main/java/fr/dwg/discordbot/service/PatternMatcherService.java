@@ -24,6 +24,7 @@ public class PatternMatcherService {
             case CONTAINS -> containsIgnoreCase(content, pattern);
             case STARTS_WITH -> content.regionMatches(true, 0, pattern, 0, pattern.length());
             case REGEX -> matchesRegex(pattern, content);
+            case GIF -> false;
         };
     }
 
@@ -42,6 +43,9 @@ public class PatternMatcherService {
     }
 
     public boolean isValidPattern(TriggerType type, String pattern) {
+        if (type == TriggerType.GIF) {
+            return true;
+        }
         if (type != TriggerType.REGEX) {
             return pattern != null && !pattern.isBlank();
         }

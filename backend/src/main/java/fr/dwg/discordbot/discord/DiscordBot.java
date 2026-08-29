@@ -34,6 +34,7 @@ public class DiscordBot {
     private final DiscordProperties discordProperties;
     private final DiscordMessageListener discordMessageListener;
     private final DiscordSlashCommandListener discordSlashCommandListener;
+    private final DiscordWelcomeListener discordWelcomeListener;
     private final ServerService serverService;
     private final BotImageService botImageService;
 
@@ -43,12 +44,14 @@ public class DiscordBot {
             DiscordProperties discordProperties,
             DiscordMessageListener discordMessageListener,
             DiscordSlashCommandListener discordSlashCommandListener,
+            DiscordWelcomeListener discordWelcomeListener,
             ServerService serverService,
             BotImageService botImageService
     ) {
         this.discordProperties = discordProperties;
         this.discordMessageListener = discordMessageListener;
         this.discordSlashCommandListener = discordSlashCommandListener;
+        this.discordWelcomeListener = discordWelcomeListener;
         this.serverService = serverService;
         this.botImageService = botImageService;
     }
@@ -104,8 +107,30 @@ public class DiscordBot {
     }
 
     private void connect(String token) throws InterruptedException {
+        try {
+            connect(token, true);
+        } catch (Exception ex) {
+            if (!isDisallowedIntents(ex)) {
+                if (ex instanceof InterruptedException interrupted) {
+                    throw interrupted;
+                }
+                if (ex instanceof RuntimeException runtime) {
+                    throw runtime;
+                }
+                throw new IllegalStateException(ex);
+            }
+            log.warn(
+                    "Intent GUILD_MEMBERS refusé par Discord. Accueil nouveau membre désactivé. "
+                            + "Active Server Members Intent dans le portail développeur."
+            );
+            shutdownQuietly();
+            connect(token, false);
+        }
+    }
+
+    private void connect(String token, boolean membersIntent) throws InterruptedException {
         log.info("Connexion du bot Discord...");
-        jda = JDABuilder.createDefault(token)
+        JDABuilder builder = JDABuilder.createDefault(token)
                 .enableIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .setChunkingFilter(ChunkingFilter.NONE)
@@ -113,10 +138,13 @@ public class DiscordBot {
                 .addEventListeners(
                         discordMessageListener,
                         discordSlashCommandListener,
+                        discordWelcomeListener,
                         guildJoinListener()
-                )
-                .build()
-                .awaitReady();
+                );
+        if (membersIntent) {
+            builder.enableIntents(GatewayIntent.GUILD_MEMBERS);
+        }
+        jda = builder.build().awaitReady();
 
         // Vide les commandes globales (propagation lente) au profit des commandes par serveur.
         jda.updateCommands().queue();
@@ -130,6 +158,30 @@ public class DiscordBot {
         updateAvatarIfConfigured();
 
         log.info("Bot Discord connecté en tant que {}", jda.getSelfUser().getName());
+    }
+
+    private void shutdownQuietly() {
+        if (jda != null) {
+            jda.shutdownNow();
+            jda = null;
+        }
+    }
+
+    private static boolean isDisallowedIntents(Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            String message = current.getMessage();
+            if (message != null) {
+                String lower = message.toLowerCase();
+                if (lower.contains("disallowed intent")
+                        || lower.contains("privileged intent")
+                        || lower.contains("used disallowed intents")) {
+                    return true;
+                }
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private ListenerAdapter guildJoinListener() {

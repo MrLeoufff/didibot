@@ -62,6 +62,18 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
             String pattern
     );
 
+    @Query("""
+            SELECT DISTINCT t FROM Trigger t
+            LEFT JOIN FETCH t.discordServer
+            LEFT JOIN FETCH t.responses
+            WHERE t.enabled = true
+              AND t.status = fr.dwg.discordbot.entity.TriggerStatus.APPROVED
+              AND t.discordServer.enabled = true
+              AND t.type = fr.dwg.discordbot.entity.TriggerType.GIF
+              AND t.discordServer.discordGuildId = :guildId
+            """)
+    List<Trigger> findActiveGifByGuildId(@Param("guildId") String guildId);
+
     long countByStatus(TriggerStatus status);
 
     @Query("""

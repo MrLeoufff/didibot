@@ -47,6 +47,13 @@ class PatternMatcherServiceTest {
         assertFalse(service.matches(trigger, "javascript"));
     }
 
+    @Test
+    void gifNeverMatchesText() {
+        Trigger trigger = trigger(TriggerType.GIF, "___GIF_ALERT___");
+        assertFalse(service.matches(trigger, "tenor.com/view/cat.gif"));
+        assertTrue(service.isValidPattern(TriggerType.GIF, ""));
+    }
+
     private Trigger trigger(TriggerType type, String pattern) {
         Trigger trigger = new Trigger();
         trigger.setType(type);

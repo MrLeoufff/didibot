@@ -23,5 +23,7 @@ export function matchesPattern(
       } catch {
         return 'invalid';
       }
+    case 'GIF':
+      return false;
   }
 }

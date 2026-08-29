@@ -8,6 +8,9 @@ public class DiscordServerDto {
     private String discordGuildId;
     private String name;
     private boolean enabled;
+    private boolean welcomeEnabled;
+    private String welcomeChannelId;
+    private String welcomeMessage;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -41,6 +44,30 @@ public class DiscordServerDto {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isWelcomeEnabled() {
+        return welcomeEnabled;
+    }
+
+    public void setWelcomeEnabled(boolean welcomeEnabled) {
+        this.welcomeEnabled = welcomeEnabled;
+    }
+
+    public String getWelcomeChannelId() {
+        return welcomeChannelId;
+    }
+
+    public void setWelcomeChannelId(String welcomeChannelId) {
+        this.welcomeChannelId = welcomeChannelId;
+    }
+
+    public String getWelcomeMessage() {
+        return welcomeMessage;
+    }
+
+    public void setWelcomeMessage(String welcomeMessage) {
+        this.welcomeMessage = welcomeMessage;
     }
 
     public Instant getCreatedAt() {

@@ -1,6 +1,8 @@
 package fr.dwg.discordbot.dto;
 
 import fr.dwg.discordbot.entity.ChannelScope;
+import fr.dwg.discordbot.entity.CooldownScope;
+import fr.dwg.discordbot.entity.TriggerAction;
 import fr.dwg.discordbot.entity.TriggerStatus;
 import fr.dwg.discordbot.entity.TriggerType;
 
@@ -20,6 +22,10 @@ public class TriggerDto {
     private String proposedByDiscordId;
     private Instant reviewedAt;
     private int cooldownSeconds;
+    private double fireChance;
+    private TriggerAction action;
+    private String reactionEmoji;
+    private CooldownScope cooldownScope;
     private ChannelScope channelScope;
     private Long discordServerId;
     private String discordGuildId;
@@ -107,6 +113,38 @@ public class TriggerDto {
 
     public void setCooldownSeconds(int cooldownSeconds) {
         this.cooldownSeconds = cooldownSeconds;
+    }
+
+    public double getFireChance() {
+        return fireChance;
+    }
+
+    public void setFireChance(double fireChance) {
+        this.fireChance = fireChance;
+    }
+
+    public TriggerAction getAction() {
+        return action;
+    }
+
+    public void setAction(TriggerAction action) {
+        this.action = action;
+    }
+
+    public String getReactionEmoji() {
+        return reactionEmoji;
+    }
+
+    public void setReactionEmoji(String reactionEmoji) {
+        this.reactionEmoji = reactionEmoji;
+    }
+
+    public CooldownScope getCooldownScope() {
+        return cooldownScope;
+    }
+
+    public void setCooldownScope(CooldownScope cooldownScope) {
+        this.cooldownScope = cooldownScope;
     }
 
     public ChannelScope getChannelScope() {

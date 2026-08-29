@@ -1,6 +1,5 @@
 package fr.dwg.discordbot.service;
 
-import fr.dwg.discordbot.config.DiscordProperties;
 import fr.dwg.discordbot.entity.ResponseRarity;
 import fr.dwg.discordbot.entity.Trigger;
 import fr.dwg.discordbot.entity.TriggerResponse;
@@ -22,14 +21,14 @@ public class ResponseService {
     private static final Logger log = LoggerFactory.getLogger(ResponseService.class);
 
     private final TriggerResponseRepository triggerResponseRepository;
-    private final double rareEventChance;
+    private final BotSettingsService botSettingsService;
 
     public ResponseService(
             TriggerResponseRepository triggerResponseRepository,
-            DiscordProperties discordProperties
+            BotSettingsService botSettingsService
     ) {
         this.triggerResponseRepository = triggerResponseRepository;
-        this.rareEventChance = Math.max(0.0, Math.min(1.0, discordProperties.getRareEventChance()));
+        this.botSettingsService = botSettingsService;
     }
 
     public Optional<PickedResponse> pickRandomResponse(Trigger trigger) {
@@ -48,6 +47,7 @@ public class ResponseService {
                 .filter(r -> r.getRarity() == ResponseRarity.RARE)
                 .toList();
 
+        double rareEventChance = botSettingsService.getRareEventChance();
         if (rareEventChance > 0 && ThreadLocalRandom.current().nextDouble() < rareEventChance) {
             List<TriggerResponse> rarePool = new ArrayList<>(localRare);
             rarePool.addAll(triggerResponseRepository.findEnabledByTriggerNameAndRarity(

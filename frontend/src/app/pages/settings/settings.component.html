@@ -1,0 +1,74 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Cockpit</p>
+    <h1>Réglages</h1>
+  </div>
+</header>
+
+@if (error()) {
+  <p class="banner error">{{ error() }}</p>
+}
+@if (ok()) {
+  <p class="banner ok">{{ ok() }}</p>
+}
+
+@if (loading()) {
+  <p class="muted">On ouvre le capot…</p>
+} @else {
+  <form class="stack" [formGroup]="form" (ngSubmit)="submit()">
+    <section class="panel">
+      <h2>Le bot, pas le .env</h2>
+      <p class="hint">
+        Ces valeurs vivent en base. Un save ici suffit, sans redéployer ni éditer le serveur.
+      </p>
+      <div class="row">
+        <label>
+          Chance d’avatar (%)
+          <input type="number" min="0" max="100" step="0.1" formControlName="avatarPercent" />
+        </label>
+        <label>
+          Événement rare (%)
+          <input type="number" min="0" max="100" step="0.1" formControlName="rarePercent" />
+        </label>
+      </div>
+      <label>
+        Salon admin (notifs de propositions)
+        <input formControlName="adminChannelId" placeholder="ID du salon Discord, vide = off" />
+      </label>
+    </section>
+
+    <section class="panel" formArrayName="servers">
+      <h2>Accueil nouveau membre</h2>
+      <p class="hint">
+        Jetons : <code>&#123;mention&#125;</code>, <code>&#123;user&#125;</code>, <code>&#123;guild&#125;</code>.
+        Salon vide = salon système Discord. Intent « Server Members » requis dans le portail Discord.
+      </p>
+      @if (servers.length === 0) {
+        <p class="muted">Aucun territoire. Le bot n’a encore vu aucun serveur.</p>
+      }
+      @for (group of servers.controls; track group.get('serverId')?.value; let i = $index) {
+        <article class="welcome" [formGroupName]="i">
+          <div class="welcome-head">
+            <strong>{{ serverLabel(group.value.name, group.value.discordGuildId) }}</strong>
+            <label class="checkbox">
+              <input type="checkbox" formControlName="welcomeEnabled" />
+              Activer
+            </label>
+          </div>
+          <label>
+            ID du salon d’accueil
+            <input formControlName="welcomeChannelId" placeholder="laisser vide = salon système" />
+          </label>
+          <label>
+            Message
+            <textarea formControlName="welcomeMessage" rows="2"></textarea>
+          </label>
+        </article>
+      }
+    </section>
+
+    <button class="btn" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Compilation…' : 'Sauver les réglages' }}
+    </button>
+  </form>
+}

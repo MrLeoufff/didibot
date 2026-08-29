@@ -3,9 +3,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
+  CooldownScope,
   DiscordServer,
   ResponseRarity,
   Trigger,
+  TriggerAction,
   TriggerRequest,
   TriggerType,
 } from '../../core/models/api.models';
@@ -38,9 +40,18 @@ export class TriggerFormComponent implements OnInit {
   readonly copyMessage = signal<string | null>(null);
   readonly duplicateWarning = signal<string | null>(null);
   readonly testMessage = signal('');
-  readonly types: TriggerType[] = ['CONTAINS', 'EXACT', 'STARTS_WITH', 'REGEX'];
+  readonly types: TriggerType[] = ['CONTAINS', 'EXACT', 'STARTS_WITH', 'REGEX', 'GIF'];
   readonly typeLabels = TRIGGER_TYPE_LABELS;
   readonly typeHints = TRIGGER_TYPE_HINTS;
+  readonly actions: { value: TriggerAction; label: string }[] = [
+    { value: 'REPLY', label: 'Message' },
+    { value: 'REACT', label: 'Réaction emoji' },
+    { value: 'BOTH', label: 'Message + réaction' },
+  ];
+  readonly cooldownScopes: { value: CooldownScope; label: string }[] = [
+    { value: 'USER', label: 'Par personne' },
+    { value: 'SERVER', label: 'Tout le serveur' },
+  ];
   readonly rarities: { value: ResponseRarity; label: string }[] = [
     { value: 'NORMAL', label: 'Normale' },
     { value: 'RARE', label: 'Rare (~1 %)' },
@@ -55,6 +66,10 @@ export class TriggerFormComponent implements OnInit {
     type: this.fb.nonNullable.control<TriggerType>('CONTAINS', Validators.required),
     enabled: true,
     cooldownSeconds: [30, [Validators.required, Validators.min(0)]],
+    fireChancePercent: [15, [Validators.required, Validators.min(0), Validators.max(100)]],
+    action: this.fb.nonNullable.control<TriggerAction>('REPLY'),
+    reactionEmoji: ['👀'],
+    cooldownScope: this.fb.nonNullable.control<CooldownScope>('USER'),
     channelScope: this.fb.nonNullable.control<'ALL' | 'INCLUDE' | 'EXCLUDE'>('ALL'),
     discordServerId: this.fb.control<number | null>(null, Validators.required),
     channelIdsText: [''],
@@ -66,6 +81,14 @@ export class TriggerFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.form.controls.type.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((type) => {
+        if (type === 'GIF') {
+          this.form.controls.pattern.setValue('___GIF_ALERT___');
+        }
+      });
+
     this.form.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.refreshDuplicateWarning());
@@ -107,6 +130,10 @@ export class TriggerFormComponent implements OnInit {
             type: trigger.type,
             enabled: trigger.enabled,
             cooldownSeconds: trigger.cooldownSeconds,
+            fireChancePercent: Math.round((trigger.fireChance ?? 1) * 100),
+            action: trigger.action ?? 'REPLY',
+            reactionEmoji: trigger.reactionEmoji || '👀',
+            cooldownScope: trigger.cooldownScope ?? 'SERVER',
             channelScope: trigger.channelScope,
             discordServerId: trigger.discordServerId,
             channelIdsText: trigger.channelIds.join(', '),
@@ -152,7 +179,14 @@ export class TriggerFormComponent implements OnInit {
     return !!server && isGlobalGuild(server.discordGuildId);
   }
 
+  isGif(): boolean {
+    return this.form.controls.type.value === 'GIF';
+  }
+
   matchPreview(): 'empty' | 'yes' | 'no' | 'invalid' {
+    if (this.isGif()) {
+      return 'empty';
+    }
     const pattern = this.form.controls.pattern.value;
     const type = this.form.controls.type.value;
     const message = this.testMessage();
@@ -230,10 +264,14 @@ export class TriggerFormComponent implements OnInit {
 
     const payload: TriggerRequest = {
       name: value.name.trim(),
-      pattern: value.pattern.trim(),
+      pattern: value.type === 'GIF' ? '___GIF_ALERT___' : value.pattern.trim(),
       type: value.type,
       enabled: value.enabled,
       cooldownSeconds: Number(value.cooldownSeconds) || 0,
+      fireChance: Math.max(0, Math.min(1, Number(value.fireChancePercent) / 100)),
+      action: value.action,
+      reactionEmoji: value.reactionEmoji.trim() || null,
+      cooldownScope: value.cooldownScope,
       channelScope: value.channelScope,
       discordServerId: value.discordServerId,
       responses,

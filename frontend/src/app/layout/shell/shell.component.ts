@@ -32,6 +32,7 @@ export class ShellComponent {
       { path: '/servers', label: 'Territoires', badge: 0 },
       { path: '/triggers', label: 'Punchlines', badge: pending },
       { path: '/logs', label: 'Preuves', badge: 0 },
+      { path: '/settings', label: 'Réglages', badge: 0 },
     ];
     if (this.auth.isAdmin()) {
       items.push({ path: '/users', label: 'Gardiens', badge: 0 });

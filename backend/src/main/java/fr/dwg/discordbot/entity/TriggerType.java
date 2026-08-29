@@ -4,5 +4,6 @@ public enum TriggerType {
     EXACT,
     CONTAINS,
     STARTS_WITH,
-    REGEX
+    REGEX,
+    GIF
 }

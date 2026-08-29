@@ -1,8 +1,12 @@
 package fr.dwg.discordbot.dto;
 
 import fr.dwg.discordbot.entity.ChannelScope;
+import fr.dwg.discordbot.entity.CooldownScope;
+import fr.dwg.discordbot.entity.TriggerAction;
 import fr.dwg.discordbot.entity.TriggerType;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -27,6 +31,16 @@ public class TriggerRequest {
     @NotNull(message = "Le cooldown est requis")
     @Min(value = 0, message = "Le cooldown ne peut pas être négatif")
     private Integer cooldownSeconds = 30;
+
+    @DecimalMin(value = "0.0", message = "La chance doit être entre 0 et 1")
+    @DecimalMax(value = "1.0", message = "La chance doit être entre 0 et 1")
+    private Double fireChance = 1.0;
+
+    private TriggerAction action = TriggerAction.REPLY;
+
+    private String reactionEmoji;
+
+    private CooldownScope cooldownScope = CooldownScope.SERVER;
 
     private ChannelScope channelScope = ChannelScope.ALL;
 
@@ -78,6 +92,38 @@ public class TriggerRequest {
 
     public void setCooldownSeconds(Integer cooldownSeconds) {
         this.cooldownSeconds = cooldownSeconds;
+    }
+
+    public Double getFireChance() {
+        return fireChance;
+    }
+
+    public void setFireChance(Double fireChance) {
+        this.fireChance = fireChance;
+    }
+
+    public TriggerAction getAction() {
+        return action;
+    }
+
+    public void setAction(TriggerAction action) {
+        this.action = action;
+    }
+
+    public String getReactionEmoji() {
+        return reactionEmoji;
+    }
+
+    public void setReactionEmoji(String reactionEmoji) {
+        this.reactionEmoji = reactionEmoji;
+    }
+
+    public CooldownScope getCooldownScope() {
+        return cooldownScope;
+    }
+
+    public void setCooldownScope(CooldownScope cooldownScope) {
+        this.cooldownScope = cooldownScope;
     }
 
     public ChannelScope getChannelScope() {

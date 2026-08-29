@@ -31,6 +31,15 @@ public class DiscordServer {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "welcome_enabled", nullable = false)
+    private boolean welcomeEnabled = false;
+
+    @Column(name = "welcome_channel_id", length = 32)
+    private String welcomeChannelId;
+
+    @Column(name = "welcome_message", columnDefinition = "TEXT")
+    private String welcomeMessage;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -82,6 +91,30 @@ public class DiscordServer {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isWelcomeEnabled() {
+        return welcomeEnabled;
+    }
+
+    public void setWelcomeEnabled(boolean welcomeEnabled) {
+        this.welcomeEnabled = welcomeEnabled;
+    }
+
+    public String getWelcomeChannelId() {
+        return welcomeChannelId;
+    }
+
+    public void setWelcomeChannelId(String welcomeChannelId) {
+        this.welcomeChannelId = welcomeChannelId;
+    }
+
+    public String getWelcomeMessage() {
+        return welcomeMessage;
+    }
+
+    public void setWelcomeMessage(String welcomeMessage) {
+        this.welcomeMessage = welcomeMessage;
     }
 
     public Instant getCreatedAt() {

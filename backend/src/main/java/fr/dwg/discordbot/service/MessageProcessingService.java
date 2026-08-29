@@ -1,10 +1,12 @@
 package fr.dwg.discordbot.service;
 
-import fr.dwg.discordbot.config.DiscordProperties;
 import fr.dwg.discordbot.dto.IncomingMessage;
 import fr.dwg.discordbot.dto.ProcessedReply;
+import fr.dwg.discordbot.entity.CooldownScope;
 import fr.dwg.discordbot.entity.Trigger;
+import fr.dwg.discordbot.entity.TriggerAction;
 import fr.dwg.discordbot.entity.TriggerResponse;
+import fr.dwg.discordbot.entity.TriggerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,7 @@ public class MessageProcessingService {
     private final TriggerExecutionService triggerExecutionService;
     private final ServerService serverService;
     private final BotImageService botImageService;
-    private final DiscordProperties discordProperties;
+    private final BotSettingsService botSettingsService;
     private final TriggerScopeService triggerScopeService;
     private final ReplyPlaceholderService replyPlaceholderService;
 
@@ -41,7 +43,7 @@ public class MessageProcessingService {
             TriggerExecutionService triggerExecutionService,
             ServerService serverService,
             BotImageService botImageService,
-            DiscordProperties discordProperties,
+            BotSettingsService botSettingsService,
             TriggerScopeService triggerScopeService,
             ReplyPlaceholderService replyPlaceholderService
     ) {
@@ -53,7 +55,7 @@ public class MessageProcessingService {
         this.triggerExecutionService = triggerExecutionService;
         this.serverService = serverService;
         this.botImageService = botImageService;
-        this.discordProperties = discordProperties;
+        this.botSettingsService = botSettingsService;
         this.triggerScopeService = triggerScopeService;
         this.replyPlaceholderService = replyPlaceholderService;
     }
@@ -86,14 +88,28 @@ public class MessageProcessingService {
                 .toList();
 
         for (Trigger trigger : triggers) {
+            if (trigger.getType() == TriggerType.GIF) {
+                continue;
+            }
             if (!channelFilterService.isChannelAllowed(trigger, message.channelId())) {
                 continue;
             }
             if (!patternMatcherService.matches(trigger, message.content())) {
                 continue;
             }
-            if (cooldownService.isOnCooldown(message.guildId(), trigger.getId(), trigger.getCooldownSeconds())) {
+            CooldownScope scope = trigger.getCooldownScope() == null ? CooldownScope.SERVER : trigger.getCooldownScope();
+            if (cooldownService.isOnCooldown(
+                    message.guildId(),
+                    trigger.getId(),
+                    message.userId(),
+                    trigger.getCooldownSeconds(),
+                    scope
+            )) {
                 log.debug("Cooldown actif pour trigger {} sur guild {}", trigger.getName(), message.guildId());
+                continue;
+            }
+            if (missesFireChance(trigger)) {
+                log.debug("Chance ratée pour trigger {} ({})", trigger.getName(), trigger.getFireChance());
                 continue;
             }
 
@@ -106,7 +122,7 @@ public class MessageProcessingService {
             TriggerResponse response = picked.get().response();
             String content = replyPlaceholderService.interpolate(response.getContent(), message);
             boolean attachImage = shouldAttachImage(picked.get().rareEvent());
-            cooldownService.markTriggered(message.guildId(), trigger.getId());
+            cooldownService.markTriggered(message.guildId(), trigger.getId(), message.userId(), scope);
             triggerExecutionService.logExecution(trigger, message, content);
 
             log.info(
@@ -118,10 +134,40 @@ public class MessageProcessingService {
                     attachImage ? " + image" : ""
             );
 
-            return Optional.of(new ProcessedReply(trigger.getId(), trigger.getName(), content, attachImage));
+            return Optional.of(toProcessed(trigger, content, attachImage));
         }
 
         return Optional.empty();
+    }
+
+    static ProcessedReply toProcessed(Trigger trigger, String content, boolean attachImage) {
+        TriggerAction action = trigger.getAction() == null ? TriggerAction.REPLY : trigger.getAction();
+        boolean sendMessage = action == TriggerAction.REPLY || action == TriggerAction.BOTH;
+        String emoji = (action == TriggerAction.REACT || action == TriggerAction.BOTH)
+                ? trigger.getReactionEmoji()
+                : null;
+        if (sendMessage && (content == null || content.isBlank()) && emoji != null && !emoji.isBlank()) {
+            sendMessage = false;
+        }
+        return new ProcessedReply(
+                trigger.getId(),
+                trigger.getName(),
+                content,
+                attachImage && sendMessage,
+                sendMessage && content != null && !content.isBlank(),
+                emoji
+        );
+    }
+
+    static boolean missesFireChance(Trigger trigger) {
+        double chance = trigger.getFireChance();
+        if (chance >= 1.0) {
+            return false;
+        }
+        if (chance <= 0.0) {
+            return true;
+        }
+        return ThreadLocalRandom.current().nextDouble() >= chance;
     }
 
     private boolean shouldAttachImage(boolean rareEvent) {
@@ -131,7 +177,7 @@ public class MessageProcessingService {
         if (rareEvent) {
             return true;
         }
-        double chance = Math.max(0.0, Math.min(1.0, discordProperties.getAvatarImageChance()));
+        double chance = Math.max(0.0, Math.min(1.0, botSettingsService.getAvatarImageChance()));
         return chance > 0 && ThreadLocalRandom.current().nextDouble() < chance;
     }
 }

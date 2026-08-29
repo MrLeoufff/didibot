@@ -58,6 +58,20 @@ public class Trigger {
     @Column(name = "cooldown_seconds", nullable = false)
     private int cooldownSeconds = 30;
 
+    @Column(name = "fire_chance", nullable = false)
+    private double fireChance = 1.0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private TriggerAction action = TriggerAction.REPLY;
+
+    @Column(name = "reaction_emoji", length = 64)
+    private String reactionEmoji;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cooldown_scope", nullable = false, length = 16)
+    private CooldownScope cooldownScope = CooldownScope.SERVER;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "channel_scope", nullable = false, length = 32)
     private ChannelScope channelScope = ChannelScope.ALL;
@@ -190,6 +204,38 @@ public class Trigger {
 
     public void setCooldownSeconds(int cooldownSeconds) {
         this.cooldownSeconds = cooldownSeconds;
+    }
+
+    public double getFireChance() {
+        return fireChance;
+    }
+
+    public void setFireChance(double fireChance) {
+        this.fireChance = fireChance;
+    }
+
+    public TriggerAction getAction() {
+        return action;
+    }
+
+    public void setAction(TriggerAction action) {
+        this.action = action;
+    }
+
+    public String getReactionEmoji() {
+        return reactionEmoji;
+    }
+
+    public void setReactionEmoji(String reactionEmoji) {
+        this.reactionEmoji = reactionEmoji;
+    }
+
+    public CooldownScope getCooldownScope() {
+        return cooldownScope;
+    }
+
+    public void setCooldownScope(CooldownScope cooldownScope) {
+        this.cooldownScope = cooldownScope;
     }
 
     public ChannelScope getChannelScope() {

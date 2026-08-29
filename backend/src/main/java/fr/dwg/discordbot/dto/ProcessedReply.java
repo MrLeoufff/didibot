@@ -4,6 +4,8 @@ public record ProcessedReply(
         Long triggerId,
         String triggerName,
         String responseContent,
-        boolean attachImage
+        boolean attachImage,
+        boolean sendMessage,
+        String reactionEmoji
 ) {
 }

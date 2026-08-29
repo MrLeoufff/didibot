@@ -8,6 +8,7 @@ import fr.dwg.discordbot.service.MessageDedupService;
 import fr.dwg.discordbot.service.MessageProcessingService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -49,16 +50,16 @@ public class DiscordMessageListener extends ListenerAdapter {
 
         Guild guild = event.getGuild();
         MessageChannel channel = event.getChannel();
+        IncomingMessage incoming = toIncoming(event.getMessage(), guild, channel);
 
         try {
-            // Les GIFs Tenor/Giphy ont parfois déjà un lien dans le contenu
-            Optional<ProcessedReply> gifReply = gifAlertService.maybeReply(guild.getId(), event.getMessage());
+            Optional<ProcessedReply> gifReply = gifAlertService.maybeReply(incoming, event.getMessage());
             if (gifReply.isPresent()) {
                 if (messageDedupService.alreadyProcessed("gif:" + event.getMessageId())) {
                     return;
                 }
                 log.info("Alerte GIF déclenchée par {} dans #{}", event.getAuthor().getName(), channel.getName());
-                sendReply(event.getMessage(), gifReply.get());
+                sendOutcome(event.getMessage(), gifReply.get());
                 return;
             }
 
@@ -66,18 +67,8 @@ public class DiscordMessageListener extends ListenerAdapter {
                 return;
             }
 
-            IncomingMessage message = new IncomingMessage(
-                    guild.getId(),
-                    guild.getName(),
-                    channel.getId(),
-                    channel.getName(),
-                    event.getAuthor().getId(),
-                    event.getAuthor().getName(),
-                    event.getMessage().getContentRaw()
-            );
-
-            Optional<ProcessedReply> reply = messageProcessingService.process(message);
-            reply.ifPresent(processed -> sendReply(event.getMessage(), processed));
+            Optional<ProcessedReply> reply = messageProcessingService.process(incoming);
+            reply.ifPresent(processed -> sendOutcome(event.getMessage(), processed));
         } catch (Exception ex) {
             log.error("Erreur lors du traitement du message Discord", ex);
         }
@@ -85,7 +76,6 @@ public class DiscordMessageListener extends ListenerAdapter {
 
     @Override
     public void onMessageUpdate(MessageUpdateEvent event) {
-        // Embeds GIF souvent disponibles seulement après update
         if (!isProcessable(event.getAuthor().isBot(), event.getMessage().isWebhookMessage(), event.isFromGuild())) {
             return;
         }
@@ -93,7 +83,8 @@ public class DiscordMessageListener extends ListenerAdapter {
             return;
         }
         try {
-            Optional<ProcessedReply> gifReply = gifAlertService.maybeReply(event.getGuild().getId(), event.getMessage());
+            IncomingMessage incoming = toIncoming(event.getMessage(), event.getGuild(), event.getChannel());
+            Optional<ProcessedReply> gifReply = gifAlertService.maybeReply(incoming, event.getMessage());
             if (gifReply.isEmpty()) {
                 return;
             }
@@ -103,7 +94,7 @@ public class DiscordMessageListener extends ListenerAdapter {
                     event.getAuthor().getName(),
                     event.getChannel().getName()
             );
-            sendReply(event.getMessage(), gifReply.get());
+            sendOutcome(event.getMessage(), gifReply.get());
         } catch (Exception ex) {
             log.error("Erreur lors du traitement GIF Discord", ex);
         }
@@ -113,7 +104,38 @@ public class DiscordMessageListener extends ListenerAdapter {
         return !bot && !webhook && fromGuild;
     }
 
-    private void sendReply(net.dv8tion.jda.api.entities.Message message, ProcessedReply processed) {
+    private IncomingMessage toIncoming(
+            net.dv8tion.jda.api.entities.Message message,
+            Guild guild,
+            MessageChannel channel
+    ) {
+        return new IncomingMessage(
+                guild.getId(),
+                guild.getName(),
+                channel.getId(),
+                channel.getName(),
+                message.getAuthor().getId(),
+                message.getAuthor().getName(),
+                message.getContentRaw()
+        );
+    }
+
+    private void sendOutcome(net.dv8tion.jda.api.entities.Message message, ProcessedReply processed) {
+        if (processed.reactionEmoji() != null && !processed.reactionEmoji().isBlank()) {
+            try {
+                message.addReaction(Emoji.fromFormatted(processed.reactionEmoji())).queue(
+                        success -> { },
+                        error -> log.warn("Réaction impossible ({}): {}", processed.reactionEmoji(), error.getMessage())
+                );
+            } catch (RuntimeException ex) {
+                log.warn("Emoji invalide '{}': {}", processed.reactionEmoji(), ex.getMessage());
+            }
+        }
+
+        if (!processed.sendMessage() || processed.responseContent() == null || processed.responseContent().isBlank()) {
+            return;
+        }
+
         MessageCreateBuilder builder = new MessageCreateBuilder()
                 .setContent(processed.responseContent());
 

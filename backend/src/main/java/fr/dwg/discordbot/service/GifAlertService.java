@@ -1,40 +1,54 @@
 package fr.dwg.discordbot.service;
 
+import fr.dwg.discordbot.dto.IncomingMessage;
 import fr.dwg.discordbot.dto.ProcessedReply;
+import fr.dwg.discordbot.entity.CooldownScope;
+import fr.dwg.discordbot.entity.Trigger;
+import fr.dwg.discordbot.entity.TriggerResponse;
+import fr.dwg.discordbot.repository.TriggerRepository;
 import net.dv8tion.jda.api.entities.EmbedType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Message.Attachment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class GifAlertService {
 
-    private static final long GIF_COOLDOWN_ID = -9001L;
-    private static final int COOLDOWN_SECONDS = 45;
+    private static final Logger log = LoggerFactory.getLogger(GifAlertService.class);
 
-    private static final List<String> RESPONSES = List.of(
-            "🚨 Alerte boomer : un GIF vient d'atterrir.",
-            "Boomer alert. Quelqu'un a sorti le GIF.",
-            "GIF détecté. Les anciens sont en danger.",
-            "Tenor a encore frappé. Alerte au boomer.",
-            "Un GIF ? En 2026 ? Courage.",
-            "Alerte millennial/boomer : format GIF activé.",
-            "Ce GIF a probablement 12 ans. Comme le meme.",
-            "DidiBot (team Java) valide le GIF... à contrecœur.",
-            "🚨 GIF incoming. Rangez vos PowerPoint."
-    );
-
+    private final TriggerRepository triggerRepository;
+    private final TriggerScopeService triggerScopeService;
+    private final ChannelFilterService channelFilterService;
     private final CooldownService cooldownService;
+    private final ResponseService responseService;
+    private final ReplyPlaceholderService replyPlaceholderService;
+    private final TriggerExecutionService triggerExecutionService;
     private final BotImageService botImageService;
 
-    public GifAlertService(CooldownService cooldownService, BotImageService botImageService) {
+    public GifAlertService(
+            TriggerRepository triggerRepository,
+            TriggerScopeService triggerScopeService,
+            ChannelFilterService channelFilterService,
+            CooldownService cooldownService,
+            ResponseService responseService,
+            ReplyPlaceholderService replyPlaceholderService,
+            TriggerExecutionService triggerExecutionService,
+            BotImageService botImageService
+    ) {
+        this.triggerRepository = triggerRepository;
+        this.triggerScopeService = triggerScopeService;
+        this.channelFilterService = channelFilterService;
         this.cooldownService = cooldownService;
+        this.responseService = responseService;
+        this.replyPlaceholderService = replyPlaceholderService;
+        this.triggerExecutionService = triggerExecutionService;
         this.botImageService = botImageService;
     }
 
@@ -75,19 +89,53 @@ public class GifAlertService {
                 || lower.contains(".gif");
     }
 
-    public Optional<ProcessedReply> maybeReply(String guildId, Message message) {
+    public Optional<ProcessedReply> maybeReply(IncomingMessage incoming, Message message) {
         if (!containsGif(message)) {
             return Optional.empty();
         }
-        if (cooldownService.isOnCooldown(guildId, GIF_COOLDOWN_ID, COOLDOWN_SECONDS)) {
+        Optional<Trigger> matched = resolveGifTrigger(incoming.guildId());
+        if (matched.isEmpty()) {
+            return Optional.empty();
+        }
+        Trigger trigger = matched.get();
+        if (!channelFilterService.isChannelAllowed(trigger, incoming.channelId())) {
+            return Optional.empty();
+        }
+        CooldownScope scope = trigger.getCooldownScope() == null ? CooldownScope.SERVER : trigger.getCooldownScope();
+        if (cooldownService.isOnCooldown(
+                incoming.guildId(),
+                trigger.getId(),
+                incoming.userId(),
+                trigger.getCooldownSeconds(),
+                scope
+        )) {
+            return Optional.empty();
+        }
+        if (MessageProcessingService.missesFireChance(trigger)) {
             return Optional.empty();
         }
 
-        cooldownService.markTriggered(guildId, GIF_COOLDOWN_ID);
-        String content = RESPONSES.get(ThreadLocalRandom.current().nextInt(RESPONSES.size()));
-        boolean attachImage = botImageService.isAvailable()
-                && ThreadLocalRandom.current().nextDouble() < 0.25;
-        return Optional.of(new ProcessedReply(GIF_COOLDOWN_ID, "🚨 Alerte GIF", content, attachImage));
+        Optional<ResponseService.PickedResponse> picked = responseService.pickRandomResponse(trigger);
+        if (picked.isEmpty()) {
+            log.warn("Alerte GIF sans réponse active");
+            return Optional.empty();
+        }
+
+        TriggerResponse response = picked.get().response();
+        String content = replyPlaceholderService.interpolate(response.getContent(), incoming);
+        boolean attachImage = picked.get().rareEvent() && botImageService.isAvailable();
+        cooldownService.markTriggered(incoming.guildId(), trigger.getId(), incoming.userId(), scope);
+        triggerExecutionService.logExecution(trigger, incoming, content);
+        return Optional.of(MessageProcessingService.toProcessed(trigger, content, attachImage));
+    }
+
+    private Optional<Trigger> resolveGifTrigger(String guildId) {
+        List<Trigger> local = triggerRepository.findActiveGifByGuildId(guildId);
+        if (TriggerScopeService.GLOBAL_GUILD_ID.equals(guildId)) {
+            return local.stream().findFirst();
+        }
+        List<Trigger> global = triggerRepository.findActiveGifByGuildId(TriggerScopeService.GLOBAL_GUILD_ID);
+        return triggerScopeService.mergeLocalAndGlobal(local, global).stream().findFirst();
     }
 
     private boolean looksLikeGifUrl(String url) {

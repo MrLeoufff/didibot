@@ -1,6 +1,5 @@
 package fr.dwg.discordbot.service;
 
-import fr.dwg.discordbot.config.DiscordProperties;
 import fr.dwg.discordbot.discord.DiscordBot;
 import fr.dwg.discordbot.dto.TriggerDto;
 import fr.dwg.discordbot.event.TriggerProposedEvent;
@@ -18,11 +17,11 @@ public class DiscordNotifyService {
 
     private static final Logger log = LoggerFactory.getLogger(DiscordNotifyService.class);
 
-    private final DiscordProperties discordProperties;
+    private final BotSettingsService botSettingsService;
     private final DiscordBot discordBot;
 
-    public DiscordNotifyService(DiscordProperties discordProperties, @Lazy DiscordBot discordBot) {
-        this.discordProperties = discordProperties;
+    public DiscordNotifyService(BotSettingsService botSettingsService, @Lazy DiscordBot discordBot) {
+        this.botSettingsService = botSettingsService;
         this.discordBot = discordBot;
     }
 
@@ -35,7 +34,7 @@ public class DiscordNotifyService {
         if (trigger == null) {
             return;
         }
-        String channelId = discordProperties.getAdminChannelId();
+        String channelId = botSettingsService.getAdminChannelId();
         if (channelId == null || channelId.isBlank()) {
             return;
         }

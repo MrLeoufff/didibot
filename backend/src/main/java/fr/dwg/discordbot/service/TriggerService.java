@@ -7,9 +7,11 @@ import fr.dwg.discordbot.dto.TriggerRequest;
 import fr.dwg.discordbot.dto.TriggerResponseDto;
 import fr.dwg.discordbot.dto.TriggerResponseInput;
 import fr.dwg.discordbot.entity.ChannelScope;
+import fr.dwg.discordbot.entity.CooldownScope;
 import fr.dwg.discordbot.entity.ResponseRarity;
 import fr.dwg.discordbot.entity.DiscordServer;
 import fr.dwg.discordbot.entity.Trigger;
+import fr.dwg.discordbot.entity.TriggerAction;
 import fr.dwg.discordbot.entity.TriggerChannel;
 import fr.dwg.discordbot.entity.TriggerResponse;
 import fr.dwg.discordbot.entity.TriggerStatus;
@@ -180,6 +182,10 @@ public class TriggerService {
             copy.setEnabled(source.isEnabled() && source.getStatus() == TriggerStatus.APPROVED);
             copy.setStatus(source.getStatus());
             copy.setCooldownSeconds(source.getCooldownSeconds());
+            copy.setFireChance(source.getFireChance());
+            copy.setAction(source.getAction());
+            copy.setReactionEmoji(source.getReactionEmoji());
+            copy.setCooldownScope(source.getCooldownScope());
             copy.setChannelScope(source.getChannelScope());
             copy.setDiscordServer(server);
             copy.setReviewedAt(Instant.now());
@@ -251,7 +257,7 @@ public class TriggerService {
                 && (request.getChannelIds() == null || request.getChannelIds().isEmpty())) {
             throw new BadRequestException("Des salons sont requis pour le scope " + scope);
         }
-        Trigger duplicate = findDuplicate(server.getId(), request.getType(), request.getPattern(), excludeId);
+        Trigger duplicate = findDuplicate(server.getId(), request.getType(), effectivePattern(request), excludeId);
         if (duplicate != null) {
             throw new BadRequestException(
                     "Un trigger « " + duplicate.getName() + " » utilise déjà ce motif sur "
@@ -271,6 +277,13 @@ public class TriggerService {
                 .orElse(null);
     }
 
+    private static String effectivePattern(TriggerRequest request) {
+        if (request.getType() == TriggerType.GIF) {
+            return "___GIF_ALERT___";
+        }
+        return request.getPattern();
+    }
+
     private DiscordServer resolveServer(Long discordServerId, String discordGuildId) {
         if (discordServerId != null) {
             return serverService.getEntity(discordServerId);
@@ -287,8 +300,21 @@ public class TriggerService {
         trigger.setType(request.getType());
         trigger.setEnabled(request.isEnabled());
         trigger.setCooldownSeconds(request.getCooldownSeconds() == null ? 30 : Math.max(0, request.getCooldownSeconds()));
+        double chance = request.getFireChance() == null ? 1.0 : request.getFireChance();
+        trigger.setFireChance(Math.max(0.0, Math.min(1.0, chance)));
+        TriggerAction action = request.getAction() == null ? TriggerAction.REPLY : request.getAction();
+        trigger.setAction(action);
+        String emoji = request.getReactionEmoji() == null ? "" : request.getReactionEmoji().trim();
+        if ((action == TriggerAction.REACT || action == TriggerAction.BOTH) && emoji.isBlank()) {
+            emoji = "👀";
+        }
+        trigger.setReactionEmoji(emoji.isBlank() ? null : emoji);
+        trigger.setCooldownScope(request.getCooldownScope() == null ? CooldownScope.SERVER : request.getCooldownScope());
         trigger.setChannelScope(request.getChannelScope() == null ? ChannelScope.ALL : request.getChannelScope());
         trigger.setDiscordServer(server);
+        if (request.getType() == TriggerType.GIF) {
+            trigger.setPattern("___GIF_ALERT___");
+        }
     }
 
     private void applyResponses(Trigger trigger, List<String> responses) {
@@ -354,6 +380,10 @@ public class TriggerService {
         dto.setProposedByDiscordId(trigger.getProposedByDiscordId());
         dto.setReviewedAt(trigger.getReviewedAt());
         dto.setCooldownSeconds(trigger.getCooldownSeconds());
+        dto.setFireChance(trigger.getFireChance());
+        dto.setAction(trigger.getAction() == null ? TriggerAction.REPLY : trigger.getAction());
+        dto.setReactionEmoji(trigger.getReactionEmoji());
+        dto.setCooldownScope(trigger.getCooldownScope() == null ? CooldownScope.SERVER : trigger.getCooldownScope());
         dto.setChannelScope(trigger.getChannelScope());
         dto.setDiscordServerId(trigger.getDiscordServer().getId());
         dto.setDiscordGuildId(trigger.getDiscordServer().getDiscordGuildId());

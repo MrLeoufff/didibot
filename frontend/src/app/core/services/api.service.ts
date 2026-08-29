@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   AppUser,
+  BotSettings,
   BotStats,
   DiscordServer,
   DiscordServerRequest,
@@ -144,5 +145,13 @@ export class ApiService {
       params = params.set('q', q.trim());
     }
     return this.http.get<Page<TriggerExecution>>(`${this.base}/logs`, { params });
+  }
+
+  getSettings(): Observable<BotSettings> {
+    return this.http.get<BotSettings>(`${this.base}/settings`);
+  }
+
+  saveSettings(payload: BotSettings): Observable<BotSettings> {
+    return this.http.put<BotSettings>(`${this.base}/settings`, payload);
   }
 }

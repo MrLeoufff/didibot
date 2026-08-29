@@ -5,6 +5,7 @@ export const TRIGGER_TYPE_LABELS: Record<TriggerType, string> = {
   EXACT: 'Exact',
   STARTS_WITH: 'Commence par',
   REGEX: 'Regex',
+  GIF: 'Alerte GIF',
 };
 
 export const TRIGGER_TYPE_HINTS: Record<TriggerType, string> = {
@@ -12,6 +13,7 @@ export const TRIGGER_TYPE_HINTS: Record<TriggerType, string> = {
   EXACT: 'Réagit seulement si le message est exactement ce texte.',
   STARTS_WITH: 'Réagit si le message commence par ce texte.',
   REGEX: 'Expression régulière, insensible à la casse. Exemple : \\bgo\\b',
+  GIF: 'Réagit à un GIF (pièce jointe, Tenor, Giphy). Le motif texte est ignoré.',
 };
 
 export const TRIGGER_STATUS_LABELS: Record<TriggerStatus, string> = {
