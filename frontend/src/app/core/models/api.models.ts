@@ -100,6 +100,11 @@ export interface Page<T> {
   size: number;
 }
 
+export interface HealthStatus {
+  status: string;
+  discordConnected: boolean;
+}
+
 export interface NameCount {
   name: string;
   count: number;
