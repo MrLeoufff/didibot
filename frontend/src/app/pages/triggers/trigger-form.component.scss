@@ -1,7 +1,16 @@
 .form {
   display: grid;
-  gap: 1rem;
-  max-width: 820px;
+  gap: 1.35rem;
+  max-width: 860px;
+}
+
+.form-section {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.form-section h2 {
+  font-size: 1.05rem;
 }
 
 .row {
@@ -24,17 +33,67 @@ label {
   font-weight: 600;
 }
 
-.responses {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 400;
 }
 
-.response-row {
+.field-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+label.invalid input,
+label.invalid select,
+label.invalid textarea {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
+  background: #fff7f6;
+}
+
+.tester {
   display: grid;
-  grid-template-columns: 1fr auto;
+  gap: 0.45rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--accent) 12%, white);
+  border: 1px solid var(--line);
+}
+
+.match {
+  margin: 0;
+  font-weight: 650;
+  font-size: 0.9rem;
+}
+
+.match.yes {
+  color: #176b43;
+}
+
+.match.no {
+  color: var(--danger);
+}
+
+.responses {
+  margin-top: 0.15rem;
+}
+
+.response-card {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: white;
+}
+
+.response-meta {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) auto;
   gap: 0.6rem;
-  align-items: start;
+  align-items: end;
 }
 
 .form-actions {
@@ -42,9 +101,16 @@ label {
   justify-content: flex-end;
 }
 
+.banner.warn {
+  background: #fff4d6;
+  color: #7a5b12;
+  border: 1px solid #f0d48a;
+  margin: 0;
+}
+
 @media (max-width: 720px) {
   .row,
-  .response-row {
+  .response-meta {
     grid-template-columns: 1fr;
   }
 }

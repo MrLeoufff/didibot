@@ -33,7 +33,9 @@ public class PatternMatcherService {
 
     private boolean matchesRegex(String regex, String content) {
         try {
-            return Pattern.compile(regex).matcher(content).find();
+            return Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+                    .matcher(content)
+                    .find();
         } catch (PatternSyntaxException ex) {
             return false;
         }
@@ -44,7 +46,7 @@ public class PatternMatcherService {
             return pattern != null && !pattern.isBlank();
         }
         try {
-            Pattern.compile(pattern);
+            Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
             return true;
         } catch (PatternSyntaxException ex) {
             return false;

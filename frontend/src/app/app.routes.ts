@@ -1,10 +1,27 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
+import { authGuard } from './core/guards/auth.guard';
 import { ShellComponent } from './layout/shell/shell.component';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./pages/register/register.component').then((m) => m.RegisterComponent),
+  },
+  {
+    path: 'propose',
+    loadComponent: () =>
+      import('./pages/propose/propose.component').then((m) => m.ProposeComponent),
+  },
+  {
     path: '',
     component: ShellComponent,
+    canActivate: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
@@ -35,6 +52,12 @@ export const routes: Routes = [
       {
         path: 'logs',
         loadComponent: () => import('./pages/logs/logs.component').then((m) => m.LogsComponent),
+      },
+      {
+        path: 'users',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/users/user-list.component').then((m) => m.UserListComponent),
       },
     ],
   },

@@ -2,12 +2,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  AppUser,
   DiscordServer,
   DiscordServerRequest,
   HealthStatus,
   Page,
+  RegisterRequest,
   Trigger,
   TriggerExecution,
+  TriggerProposeRequest,
   TriggerRequest,
   TriggerResponse,
 } from '../models/api.models';
@@ -21,8 +24,32 @@ export class ApiService {
     return this.http.get<HealthStatus>(`${this.base}/health`);
   }
 
+  register(payload: RegisterRequest): Observable<AppUser> {
+    return this.http.post<AppUser>(`${this.base}/auth/register`, payload);
+  }
+
+  getUsers(): Observable<AppUser[]> {
+    return this.http.get<AppUser[]>(`${this.base}/users`);
+  }
+
+  getPendingUsers(): Observable<AppUser[]> {
+    return this.http.get<AppUser[]>(`${this.base}/users/pending`);
+  }
+
+  approveUser(id: number): Observable<AppUser> {
+    return this.http.patch<AppUser>(`${this.base}/users/${id}/approve`, {});
+  }
+
+  rejectUser(id: number): Observable<AppUser> {
+    return this.http.patch<AppUser>(`${this.base}/users/${id}/reject`, {});
+  }
+
   getTriggers(): Observable<Trigger[]> {
     return this.http.get<Trigger[]>(`${this.base}/triggers`);
+  }
+
+  getPendingTriggers(): Observable<Trigger[]> {
+    return this.http.get<Trigger[]>(`${this.base}/triggers/pending`);
   }
 
   getTrigger(id: number): Observable<Trigger> {
@@ -31,6 +58,10 @@ export class ApiService {
 
   createTrigger(payload: TriggerRequest): Observable<Trigger> {
     return this.http.post<Trigger>(`${this.base}/triggers`, payload);
+  }
+
+  proposeTrigger(payload: TriggerProposeRequest): Observable<Trigger> {
+    return this.http.post<Trigger>(`${this.base}/triggers/propose`, payload);
   }
 
   updateTrigger(id: number, payload: TriggerRequest): Observable<Trigger> {
@@ -47,6 +78,14 @@ export class ApiService {
 
   disableTrigger(id: number): Observable<Trigger> {
     return this.http.patch<Trigger>(`${this.base}/triggers/${id}/disable`, {});
+  }
+
+  approveTrigger(id: number): Observable<Trigger> {
+    return this.http.patch<Trigger>(`${this.base}/triggers/${id}/approve`, {});
+  }
+
+  rejectTrigger(id: number): Observable<Trigger> {
+    return this.http.patch<Trigger>(`${this.base}/triggers/${id}/reject`, {});
   }
 
   addResponse(triggerId: number, content: string): Observable<TriggerResponse> {

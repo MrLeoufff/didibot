@@ -23,6 +23,15 @@ server:
 discord:
   token: ${DISCORD_TOKEN:}
   enabled: ${DISCORD_ENABLED:true}
+  rare-event-chance: ${DISCORD_RARE_EVENT_CHANCE:0.01}
+  avatar-image-chance: ${DISCORD_AVATAR_IMAGE_CHANCE:0.12}
+  update-avatar-on-startup: ${DISCORD_UPDATE_AVATAR_ON_STARTUP:true}
+
+admin:
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:changeme}
+  jwt-secret: ${JWT_SECRET:change-me-to-a-long-random-secret-key-32chars-min}
+  jwt-expiration-minutes: ${JWT_EXPIRATION_MINUTES:720}
 
 springdoc:
   api-docs:

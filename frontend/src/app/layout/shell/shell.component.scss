@@ -77,6 +77,22 @@ nav a.active {
   padding: 2rem 2.25rem 3rem;
 }
 
+.sidebar-foot {
+  margin-top: auto;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.muted-link {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.muted-link:hover {
+  color: var(--ink);
+}
+
 @media (max-width: 860px) {
   .shell {
     grid-template-columns: 1fr;

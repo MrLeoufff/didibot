@@ -80,12 +80,29 @@ Notes :
 Si des enregistrements existent encore pour **`reneleliard.online`** (domaine abandonné), tu peux les supprimer côté Hostinger / registrar.  
 Sur le serveur, ces blocs ont déjà été retirés du Caddyfile.
 
+## Auth admin & propositions
+
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=...
+JWT_SECRET=...
+```
+
+- Login : `/login` (admin env ou compte approuvé)
+- Demande de compte : `/register` (reste en `PENDING` jusqu’à acceptation)
+- Admin : page `/users` pour accepter / refuser les comptes
+- Proposition publique : `/propose`
+- Discord : `/propose-trigger`
+- Les propositions restent en `PENDING` jusqu’à approbation admin
+- Événements rares : ~1 % des réponses (`DISCORD_RARE_EVENT_CHANCE`, défaut `0.01`)
+
 ## Discord
 
 1. Créer une application bot
 2. Activer **Message Content Intent**
 3. Copier le **Bot Token** dans `.env`
 4. Inviter le bot (permissions Send Messages + Read Message History)
+5. Ne pas lancer deux instances avec le même token (`DISCORD_ENABLED=false` en local si la prod tourne)
 
 ## Structure
 

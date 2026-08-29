@@ -31,10 +31,20 @@ public interface TriggerRepository extends JpaRepository<Trigger, Long> {
             LEFT JOIN FETCH t.discordServer
             LEFT JOIN FETCH t.responses
             WHERE t.enabled = true
+              AND t.status = fr.dwg.discordbot.entity.TriggerStatus.APPROVED
               AND t.discordServer.enabled = true
               AND t.discordServer.discordGuildId = :guildId
             """)
     List<Trigger> findActiveByGuildId(@Param("guildId") String guildId);
+
+    @Query("""
+            SELECT DISTINCT t FROM Trigger t
+            LEFT JOIN FETCH t.discordServer
+            LEFT JOIN FETCH t.responses
+            WHERE t.status = fr.dwg.discordbot.entity.TriggerStatus.PENDING
+            ORDER BY t.createdAt DESC
+            """)
+    List<Trigger> findPendingDetailed();
 
     @Query("""
             SELECT DISTINCT t FROM Trigger t

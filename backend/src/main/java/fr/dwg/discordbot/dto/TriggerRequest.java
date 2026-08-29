@@ -2,8 +2,10 @@ package fr.dwg.discordbot.dto;
 
 import fr.dwg.discordbot.entity.ChannelScope;
 import fr.dwg.discordbot.entity.TriggerType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.ArrayList;
@@ -11,19 +13,20 @@ import java.util.List;
 
 public class TriggerRequest {
 
-    @NotBlank
+    @NotBlank(message = "Le nom est requis")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "Le déclencheur est requis")
     private String pattern;
 
-    @NotNull
+    @NotNull(message = "Le type est requis")
     private TriggerType type;
 
     private boolean enabled = true;
 
-    @Min(0)
-    private int cooldownSeconds = 30;
+    @NotNull(message = "Le cooldown est requis")
+    @Min(value = 0, message = "Le cooldown ne peut pas être négatif")
+    private Integer cooldownSeconds = 30;
 
     private ChannelScope channelScope = ChannelScope.ALL;
 
@@ -31,7 +34,9 @@ public class TriggerRequest {
 
     private String discordGuildId;
 
-    private List<String> responses = new ArrayList<>();
+    @Valid
+    @NotEmpty(message = "Au moins une réponse est requise")
+    private List<TriggerResponseInput> responses = new ArrayList<>();
 
     private List<String> channelIds = new ArrayList<>();
 
@@ -67,11 +72,11 @@ public class TriggerRequest {
         this.enabled = enabled;
     }
 
-    public int getCooldownSeconds() {
+    public Integer getCooldownSeconds() {
         return cooldownSeconds;
     }
 
-    public void setCooldownSeconds(int cooldownSeconds) {
+    public void setCooldownSeconds(Integer cooldownSeconds) {
         this.cooldownSeconds = cooldownSeconds;
     }
 
@@ -99,11 +104,11 @@ public class TriggerRequest {
         this.discordGuildId = discordGuildId;
     }
 
-    public List<String> getResponses() {
+    public List<TriggerResponseInput> getResponses() {
         return responses;
     }
 
-    public void setResponses(List<String> responses) {
+    public void setResponses(List<TriggerResponseInput> responses) {
         this.responses = responses;
     }
 

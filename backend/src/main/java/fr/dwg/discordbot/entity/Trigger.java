@@ -42,6 +42,19 @@ public class Trigger {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
+    private TriggerStatus status = TriggerStatus.APPROVED;
+
+    @Column(name = "proposed_by")
+    private String proposedBy;
+
+    @Column(name = "proposed_by_discord_id", length = 32)
+    private String proposedByDiscordId;
+
+    @Column(name = "reviewed_at")
+    private Instant reviewedAt;
+
     @Column(name = "cooldown_seconds", nullable = false)
     private int cooldownSeconds = 30;
 
@@ -137,6 +150,38 @@ public class Trigger {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public TriggerStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TriggerStatus status) {
+        this.status = status;
+    }
+
+    public String getProposedBy() {
+        return proposedBy;
+    }
+
+    public void setProposedBy(String proposedBy) {
+        this.proposedBy = proposedBy;
+    }
+
+    public String getProposedByDiscordId() {
+        return proposedByDiscordId;
+    }
+
+    public void setProposedByDiscordId(String proposedByDiscordId) {
+        this.proposedByDiscordId = proposedByDiscordId;
+    }
+
+    public Instant getReviewedAt() {
+        return reviewedAt;
+    }
+
+    public void setReviewedAt(Instant reviewedAt) {
+        this.reviewedAt = reviewedAt;
     }
 
     public int getCooldownSeconds() {

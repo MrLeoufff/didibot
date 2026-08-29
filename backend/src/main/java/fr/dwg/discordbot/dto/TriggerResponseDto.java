@@ -1,5 +1,7 @@
 package fr.dwg.discordbot.dto;
 
+import fr.dwg.discordbot.entity.ResponseRarity;
+
 import java.time.Instant;
 
 public class TriggerResponseDto {
@@ -7,16 +9,25 @@ public class TriggerResponseDto {
     private Long id;
     private String content;
     private boolean enabled;
+    private ResponseRarity rarity;
     private Instant createdAt;
     private Instant updatedAt;
 
     public TriggerResponseDto() {
     }
 
-    public TriggerResponseDto(Long id, String content, boolean enabled, Instant createdAt, Instant updatedAt) {
+    public TriggerResponseDto(
+            Long id,
+            String content,
+            boolean enabled,
+            ResponseRarity rarity,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
         this.id = id;
         this.content = content;
         this.enabled = enabled;
+        this.rarity = rarity;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -43,6 +54,14 @@ public class TriggerResponseDto {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public ResponseRarity getRarity() {
+        return rarity;
+    }
+
+    public void setRarity(ResponseRarity rarity) {
+        this.rarity = rarity;
     }
 
     public Instant getCreatedAt() {

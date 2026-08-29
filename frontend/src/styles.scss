@@ -104,6 +104,45 @@ h1 {
   border: 1px solid #f3c1ba;
 }
 
+.banner.warn {
+  background: #fff4d6;
+  color: #7a5b12;
+  border: 1px solid #f0d48a;
+}
+
+.banner.ok {
+  background: #d8f5e5;
+  color: #176b43;
+  border: 1px solid #b7e7cb;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+label.invalid input,
+label.invalid select,
+label.invalid textarea,
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
+}
+
+.pending-panel {
+  margin-bottom: 1.25rem;
+  border-color: color-mix(in srgb, var(--accent-strong) 35%, var(--line));
+}
+
 .btn {
   appearance: none;
   border: 0;

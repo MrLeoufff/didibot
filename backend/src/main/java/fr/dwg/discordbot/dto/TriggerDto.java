@@ -1,6 +1,7 @@
 package fr.dwg.discordbot.dto;
 
 import fr.dwg.discordbot.entity.ChannelScope;
+import fr.dwg.discordbot.entity.TriggerStatus;
 import fr.dwg.discordbot.entity.TriggerType;
 
 import java.time.Instant;
@@ -14,6 +15,10 @@ public class TriggerDto {
     private String pattern;
     private TriggerType type;
     private boolean enabled;
+    private TriggerStatus status;
+    private String proposedBy;
+    private String proposedByDiscordId;
+    private Instant reviewedAt;
     private int cooldownSeconds;
     private ChannelScope channelScope;
     private Long discordServerId;
@@ -62,6 +67,38 @@ public class TriggerDto {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public TriggerStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TriggerStatus status) {
+        this.status = status;
+    }
+
+    public String getProposedBy() {
+        return proposedBy;
+    }
+
+    public void setProposedBy(String proposedBy) {
+        this.proposedBy = proposedBy;
+    }
+
+    public String getProposedByDiscordId() {
+        return proposedByDiscordId;
+    }
+
+    public void setProposedByDiscordId(String proposedByDiscordId) {
+        this.proposedByDiscordId = proposedByDiscordId;
+    }
+
+    public Instant getReviewedAt() {
+        return reviewedAt;
+    }
+
+    public void setReviewedAt(Instant reviewedAt) {
+        this.reviewedAt = reviewedAt;
     }
 
     public int getCooldownSeconds() {

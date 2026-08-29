@@ -2,6 +2,8 @@ package fr.dwg.discordbot.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,6 +29,10 @@ public class TriggerResponse {
 
     @Column(nullable = false)
     private boolean enabled = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private ResponseRarity rarity = ResponseRarity.NORMAL;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "trigger_id", nullable = false)
@@ -72,6 +78,14 @@ public class TriggerResponse {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public ResponseRarity getRarity() {
+        return rarity;
+    }
+
+    public void setRarity(ResponseRarity rarity) {
+        this.rarity = rarity;
     }
 
     public Trigger getTrigger() {

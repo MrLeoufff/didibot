@@ -9,10 +9,16 @@
     </div>
 
     <nav>
-      @for (item of nav; track item.path) {
+      @for (item of nav(); track item.path) {
         <a [routerLink]="item.path" routerLinkActive="active">{{ item.label }}</a>
       }
     </nav>
+
+    <div class="sidebar-foot">
+      <p class="muted">{{ auth.username() }}</p>
+      <button type="button" class="btn ghost" (click)="logout()">Déconnexion</button>
+      <a class="muted-link" routerLink="/propose">Page proposition</a>
+    </div>
   </aside>
 
   <main class="content">

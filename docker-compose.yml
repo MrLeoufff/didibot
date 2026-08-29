@@ -27,6 +27,10 @@ services:
         condition: service_healthy
     environment:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
+      DISCORD_ENABLED: ${DISCORD_ENABLED:-true}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-long-random-secret-key-32chars-min}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/${POSTGRES_DB:-discord_bot}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discord}

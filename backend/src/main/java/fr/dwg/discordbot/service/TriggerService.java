@@ -2,13 +2,17 @@ package fr.dwg.discordbot.service;
 
 import fr.dwg.discordbot.dto.ResponseCreateRequest;
 import fr.dwg.discordbot.dto.TriggerDto;
+import fr.dwg.discordbot.dto.TriggerProposeRequest;
 import fr.dwg.discordbot.dto.TriggerRequest;
 import fr.dwg.discordbot.dto.TriggerResponseDto;
+import fr.dwg.discordbot.dto.TriggerResponseInput;
 import fr.dwg.discordbot.entity.ChannelScope;
+import fr.dwg.discordbot.entity.ResponseRarity;
 import fr.dwg.discordbot.entity.DiscordServer;
 import fr.dwg.discordbot.entity.Trigger;
 import fr.dwg.discordbot.entity.TriggerChannel;
 import fr.dwg.discordbot.entity.TriggerResponse;
+import fr.dwg.discordbot.entity.TriggerStatus;
 import fr.dwg.discordbot.exception.BadRequestException;
 import fr.dwg.discordbot.exception.ResourceNotFoundException;
 import fr.dwg.discordbot.repository.TriggerRepository;
@@ -16,6 +20,7 @@ import fr.dwg.discordbot.repository.TriggerResponseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -44,6 +49,11 @@ public class TriggerService {
     }
 
     @Transactional(readOnly = true)
+    public List<TriggerDto> findPending() {
+        return triggerRepository.findPendingDetailed().stream().map(this::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
     public TriggerDto findById(Long id) {
         return toDto(getDetailed(id));
     }
@@ -55,27 +65,83 @@ public class TriggerService {
 
     @Transactional
     public TriggerDto create(TriggerRequest request) {
-        validateRequest(request);
-        DiscordServer server = resolveServer(request);
+        validateAdminRequest(request);
+        DiscordServer server = resolveServer(request.getDiscordServerId(), request.getDiscordGuildId());
 
         Trigger trigger = new Trigger();
         applyRequest(trigger, request, server);
-        applyResponses(trigger, request.getResponses());
+        trigger.setStatus(TriggerStatus.APPROVED);
+        trigger.setReviewedAt(Instant.now());
+        applyResponseInputs(trigger, request.getResponses());
         applyChannels(trigger, request.getChannelIds(), request.getChannelScope());
 
         return toDto(triggerRepository.save(trigger));
     }
 
     @Transactional
-    public TriggerDto update(Long id, TriggerRequest request) {
-        validateRequest(request);
+    public TriggerDto propose(TriggerProposeRequest request, String proposedByDiscordId) {
+        if (!patternMatcherService.isValidPattern(request.getType(), request.getPattern())) {
+            throw new BadRequestException("Motif invalide pour le type " + request.getType());
+        }
+        if (request.getResponses() == null || request.getResponses().stream().noneMatch(r -> r != null && !r.isBlank())) {
+            throw new BadRequestException("Au moins une réponse est requise");
+        }
+
+        DiscordServer server = resolveServer(null, request.getDiscordGuildId());
+        Trigger trigger = new Trigger();
+        trigger.setName(request.getName().trim());
+        trigger.setPattern(request.getPattern().trim());
+        trigger.setType(request.getType());
+        trigger.setEnabled(false);
+        trigger.setStatus(TriggerStatus.PENDING);
+        trigger.setCooldownSeconds(Math.max(0, request.getCooldownSeconds()));
+        trigger.setChannelScope(ChannelScope.ALL);
+        trigger.setDiscordServer(server);
+        trigger.setProposedBy(
+                request.getProposedBy() == null || request.getProposedBy().isBlank()
+                        ? "Anonyme"
+                        : request.getProposedBy().trim()
+        );
+        trigger.setProposedByDiscordId(proposedByDiscordId);
+        applyResponses(trigger, request.getResponses());
+
+        return toDto(triggerRepository.save(trigger));
+    }
+
+    @Transactional
+    public TriggerDto approve(Long id) {
         Trigger trigger = getDetailed(id);
-        DiscordServer server = resolveServer(request);
+        if (trigger.getStatus() != TriggerStatus.PENDING) {
+            throw new BadRequestException("Seuls les triggers en attente peuvent être approuvés");
+        }
+        trigger.setStatus(TriggerStatus.APPROVED);
+        trigger.setEnabled(true);
+        trigger.setReviewedAt(Instant.now());
+        return toDto(trigger);
+    }
+
+    @Transactional
+    public TriggerDto reject(Long id) {
+        Trigger trigger = getDetailed(id);
+        if (trigger.getStatus() != TriggerStatus.PENDING) {
+            throw new BadRequestException("Seuls les triggers en attente peuvent être refusés");
+        }
+        trigger.setStatus(TriggerStatus.REJECTED);
+        trigger.setEnabled(false);
+        trigger.setReviewedAt(Instant.now());
+        return toDto(trigger);
+    }
+
+    @Transactional
+    public TriggerDto update(Long id, TriggerRequest request) {
+        validateAdminRequest(request);
+        Trigger trigger = getDetailed(id);
+        DiscordServer server = resolveServer(request.getDiscordServerId(), request.getDiscordGuildId());
 
         applyRequest(trigger, request, server);
         trigger.clearResponses();
         trigger.clearChannels();
-        applyResponses(trigger, request.getResponses());
+        applyResponseInputs(trigger, request.getResponses());
         applyChannels(trigger, request.getChannelIds(), request.getChannelScope());
 
         return toDto(trigger);
@@ -92,6 +158,9 @@ public class TriggerService {
     @Transactional
     public TriggerDto setEnabled(Long id, boolean enabled) {
         Trigger trigger = getDetailed(id);
+        if (enabled && trigger.getStatus() != TriggerStatus.APPROVED) {
+            throw new BadRequestException("Un trigger doit être approuvé avant d'être activé");
+        }
         trigger.setEnabled(enabled);
         return toDto(trigger);
     }
@@ -116,9 +185,13 @@ public class TriggerService {
         response.setTrigger(null);
     }
 
-    private void validateRequest(TriggerRequest request) {
+    private void validateAdminRequest(TriggerRequest request) {
         if (!patternMatcherService.isValidPattern(request.getType(), request.getPattern())) {
             throw new BadRequestException("Motif invalide pour le type " + request.getType());
+        }
+        if (request.getResponses() == null
+                || request.getResponses().stream().noneMatch(r -> r != null && r.getContent() != null && !r.getContent().isBlank())) {
+            throw new BadRequestException("Au moins une réponse est requise");
         }
         ChannelScope scope = request.getChannelScope() == null ? ChannelScope.ALL : request.getChannelScope();
         if (scope != ChannelScope.ALL
@@ -127,12 +200,12 @@ public class TriggerService {
         }
     }
 
-    private DiscordServer resolveServer(TriggerRequest request) {
-        if (request.getDiscordServerId() != null) {
-            return serverService.getEntity(request.getDiscordServerId());
+    private DiscordServer resolveServer(Long discordServerId, String discordGuildId) {
+        if (discordServerId != null) {
+            return serverService.getEntity(discordServerId);
         }
-        if (request.getDiscordGuildId() != null && !request.getDiscordGuildId().isBlank()) {
-            return serverService.getByGuildId(request.getDiscordGuildId());
+        if (discordGuildId != null && !discordGuildId.isBlank()) {
+            return serverService.syncGuild(discordGuildId, null);
         }
         return serverService.getByGuildId("0");
     }
@@ -142,7 +215,7 @@ public class TriggerService {
         trigger.setPattern(request.getPattern());
         trigger.setType(request.getType());
         trigger.setEnabled(request.isEnabled());
-        trigger.setCooldownSeconds(request.getCooldownSeconds());
+        trigger.setCooldownSeconds(request.getCooldownSeconds() == null ? 30 : Math.max(0, request.getCooldownSeconds()));
         trigger.setChannelScope(request.getChannelScope() == null ? ChannelScope.ALL : request.getChannelScope());
         trigger.setDiscordServer(server);
     }
@@ -158,6 +231,22 @@ public class TriggerService {
             TriggerResponse response = new TriggerResponse();
             response.setContent(content.trim());
             response.setEnabled(true);
+            trigger.addResponse(response);
+        }
+    }
+
+    private void applyResponseInputs(Trigger trigger, List<TriggerResponseInput> responses) {
+        if (responses == null) {
+            return;
+        }
+        for (TriggerResponseInput input : responses) {
+            if (input == null || input.getContent() == null || input.getContent().isBlank()) {
+                continue;
+            }
+            TriggerResponse response = new TriggerResponse();
+            response.setContent(input.getContent().trim());
+            response.setEnabled(input.isEnabled());
+            response.setRarity(input.getRarity() == null ? ResponseRarity.NORMAL : input.getRarity());
             trigger.addResponse(response);
         }
     }
@@ -189,6 +278,10 @@ public class TriggerService {
         dto.setPattern(trigger.getPattern());
         dto.setType(trigger.getType());
         dto.setEnabled(trigger.isEnabled());
+        dto.setStatus(trigger.getStatus());
+        dto.setProposedBy(trigger.getProposedBy());
+        dto.setProposedByDiscordId(trigger.getProposedByDiscordId());
+        dto.setReviewedAt(trigger.getReviewedAt());
         dto.setCooldownSeconds(trigger.getCooldownSeconds());
         dto.setChannelScope(trigger.getChannelScope());
         dto.setDiscordServerId(trigger.getDiscordServer().getId());
@@ -206,6 +299,7 @@ public class TriggerService {
                 response.getId(),
                 response.getContent(),
                 response.isEnabled(),
+                response.getRarity(),
                 response.getCreatedAt(),
                 response.getUpdatedAt()
         );

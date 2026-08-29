@@ -1,12 +1,22 @@
 export type TriggerType = 'EXACT' | 'CONTAINS' | 'STARTS_WITH' | 'REGEX';
 export type ChannelScope = 'ALL' | 'INCLUDE' | 'EXCLUDE';
+export type TriggerStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export type ResponseRarity = 'NORMAL' | 'RARE';
 
 export interface TriggerResponse {
   id: number;
   content: string;
   enabled: boolean;
+  rarity?: ResponseRarity;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface TriggerResponseInput {
+  content: string;
+  enabled?: boolean;
+  rarity?: ResponseRarity;
 }
 
 export interface Trigger {
@@ -15,6 +25,10 @@ export interface Trigger {
   pattern: string;
   type: TriggerType;
   enabled: boolean;
+  status: TriggerStatus;
+  proposedBy?: string | null;
+  proposedByDiscordId?: string | null;
+  reviewedAt?: string | null;
   cooldownSeconds: number;
   channelScope: ChannelScope;
   discordServerId: number;
@@ -35,8 +49,18 @@ export interface TriggerRequest {
   channelScope: ChannelScope;
   discordServerId?: number | null;
   discordGuildId?: string | null;
-  responses: string[];
+  responses: TriggerResponseInput[];
   channelIds: string[];
+}
+
+export interface TriggerProposeRequest {
+  name: string;
+  pattern: string;
+  type: TriggerType;
+  cooldownSeconds: number;
+  discordGuildId?: string | null;
+  proposedBy?: string | null;
+  responses: string[];
 }
 
 export interface DiscordServer {
@@ -79,4 +103,25 @@ export interface Page<T> {
 export interface HealthStatus {
   status: string;
   discordConnected: boolean;
+}
+
+export type UserStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface LoginResponse {
+  token: string;
+  username: string;
+  role: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  password: string;
+}
+
+export interface AppUser {
+  id: number;
+  username: string;
+  status: UserStatus;
+  requestedAt?: string | null;
+  reviewedAt?: string | null;
 }

@@ -2,6 +2,9 @@
   <div>
     <p class="eyebrow">Règles</p>
     <h1>Triggers</h1>
+    @if (!loading()) {
+      <p class="muted count">{{ triggers().length }} règle{{ triggers().length > 1 ? 's' : '' }}</p>
+    }
   </div>
   <a class="btn" routerLink="/triggers/new">Ajouter</a>
 </header>
@@ -12,50 +15,114 @@
 
 @if (loading()) {
   <p class="muted">Chargement…</p>
-} @else if (triggers().length === 0) {
-  <section class="panel">
-    <p class="muted">Aucun trigger. Crée-en un pour commencer.</p>
-  </section>
 } @else {
-  <section class="panel">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Nom</th>
-            <th>Déclencheur</th>
-            <th>Type</th>
-            <th>Cooldown</th>
-            <th>État</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (trigger of triggers(); track trigger.id) {
+  @if (pending().length > 0) {
+    <section class="panel pending-panel">
+      <div class="panel-head">
+        <h2>À approuver ({{ pending().length }})</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
             <tr>
-              <td>
-                <a [routerLink]="['/triggers', trigger.id]">{{ trigger.name }}</a>
-              </td>
-              <td><code>{{ trigger.pattern }}</code></td>
-              <td>{{ trigger.type }}</td>
-              <td>{{ trigger.cooldownSeconds }} s</td>
-              <td>
-                <span class="badge" [class.on]="trigger.enabled" [class.off]="!trigger.enabled">
-                  {{ trigger.enabled ? 'Actif' : 'Inactif' }}
-                </span>
-              </td>
-              <td class="actions">
-                <button type="button" class="btn ghost" (click)="toggle(trigger)">
-                  {{ trigger.enabled ? 'Désactiver' : 'Activer' }}
-                </button>
-                <button type="button" class="btn danger ghost" (click)="remove(trigger)">
-                  Supprimer
-                </button>
-              </td>
+              <th>Nom</th>
+              <th>Motif</th>
+              <th>Proposé par</th>
+              <th></th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (trigger of pending(); track trigger.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/triggers', trigger.id]">{{ trigger.name }}</a>
+                </td>
+                <td><code>{{ trigger.pattern }}</code></td>
+                <td>{{ trigger.proposedBy || '—' }}</td>
+                <td class="actions">
+                  <button type="button" class="btn" (click)="approve(trigger)">Approuver</button>
+                  <button type="button" class="btn danger ghost" (click)="reject(trigger)">Refuser</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  <section class="panel">
+    <div class="toolbar">
+      <label class="search">
+        <span class="sr-only">Rechercher</span>
+        <input
+          type="search"
+          [value]="query()"
+          (input)="onSearch($event)"
+          placeholder="Rechercher un nom, un motif, un serveur…"
+        />
+      </label>
+      <div class="filters">
+        <button type="button" class="chip" [class.active]="statusFilter() === 'ALL'" (click)="statusFilter.set('ALL')">Tous</button>
+        <button type="button" class="chip" [class.active]="statusFilter() === 'ACTIVE'" (click)="statusFilter.set('ACTIVE')">Actifs</button>
+        <button type="button" class="chip" [class.active]="statusFilter() === 'INACTIVE'" (click)="statusFilter.set('INACTIVE')">Inactifs</button>
+        <button type="button" class="chip" [class.active]="statusFilter() === 'REJECTED'" (click)="statusFilter.set('REJECTED')">Refusés</button>
+      </div>
     </div>
+
+    @if (filtered().length === 0) {
+      <p class="muted">
+        @if (query() || statusFilter() !== 'ALL') {
+          Aucun trigger ne correspond à ce filtre.
+        } @else {
+          Aucun trigger approuvé pour le moment.
+        }
+      </p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Déclencheur</th>
+              <th>Type</th>
+              <th>Serveur</th>
+              <th>Réponses</th>
+              <th>État</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (trigger of filtered(); track trigger.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/triggers', trigger.id]">{{ trigger.name }}</a>
+                </td>
+                <td><code>{{ trigger.pattern }}</code></td>
+                <td>{{ typeLabels[trigger.type] }}</td>
+                <td>{{ trigger.discordServerName }}</td>
+                <td>{{ trigger.responses.length }}</td>
+                <td>
+                  <span class="badge" [class.on]="trigger.enabled" [class.off]="!trigger.enabled">
+                    {{ trigger.enabled ? 'Actif' : 'Inactif' }}
+                  </span>
+                  @if (trigger.status !== 'APPROVED') {
+                    <span class="badge off">{{ statusLabels[trigger.status] }}</span>
+                  }
+                </td>
+                <td class="actions">
+                  <button type="button" class="btn ghost" (click)="toggle(trigger)" [disabled]="trigger.status !== 'APPROVED'">
+                    {{ trigger.enabled ? 'Désactiver' : 'Activer' }}
+                  </button>
+                  <button type="button" class="btn danger ghost" (click)="remove(trigger)">
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </section>
 }

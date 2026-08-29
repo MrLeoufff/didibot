@@ -1,0 +1,82 @@
+<div class="propose-page">
+  <form class="panel form" [formGroup]="form" (ngSubmit)="submit()">
+    <p class="eyebrow">Communauté</p>
+    <h1>Proposer un trigger</h1>
+    <p class="muted">Ta proposition restera en attente jusqu’à validation d’un admin.</p>
+
+    @if (error()) {
+      <p class="banner error">{{ error() }}</p>
+    }
+    @if (success()) {
+      <p class="banner ok">{{ success() }}</p>
+    }
+
+    <label>
+      Ton pseudo
+      <input formControlName="proposedBy" placeholder="René" />
+    </label>
+
+    <label [class.invalid]="invalid('name')">
+      Nom du trigger
+      <input formControlName="name" placeholder="Troll PHP" />
+      @if (invalid('name')) {
+        <span class="field-error">Le nom est requis.</span>
+      }
+    </label>
+
+    <label [class.invalid]="invalid('pattern')">
+      Motif
+      <input formControlName="pattern" placeholder="PHP" />
+      @if (invalid('pattern')) {
+        <span class="field-error">Le motif est requis.</span>
+      }
+    </label>
+
+    <div class="row">
+      <label>
+        Type
+        <select formControlName="type">
+          @for (type of types; track type) {
+            <option [value]="type">{{ typeLabels[type] }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Cooldown (s)
+        <input type="number" min="0" formControlName="cooldownSeconds" />
+      </label>
+    </div>
+    <p class="hint">{{ typeHints[form.controls.type.value] }}</p>
+
+    <label>
+      Guild ID Discord (optionnel)
+      <input formControlName="discordGuildId" placeholder="123456789012345678" />
+    </label>
+
+    <div formArrayName="responses" class="responses">
+      <div class="panel-head">
+        <h2>Réponses</h2>
+        <button type="button" class="btn ghost" (click)="addResponse()">+ Ajouter</button>
+      </div>
+      @for (control of responses.controls; track $index; let i = $index) {
+        <div class="response-row">
+          <label [class.invalid]="responseInvalid(i)">
+            <textarea [formControlName]="i" rows="2" placeholder="Texte de réponse…"></textarea>
+            @if (responseInvalid(i)) {
+              <span class="field-error">Le texte est requis.</span>
+            }
+          </label>
+          <button type="button" class="btn danger ghost" (click)="removeResponse(i)" [disabled]="responses.length === 1">
+            Retirer
+          </button>
+        </div>
+      }
+    </div>
+
+    <button class="btn" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Envoi…' : 'Envoyer la proposition' }}
+    </button>
+
+    <a class="link" routerLink="/login">Espace admin</a>
+  </form>
+</div>

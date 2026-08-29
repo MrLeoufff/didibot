@@ -1,0 +1,28 @@
+<div class="login-page">
+  <form class="panel form" [formGroup]="form" (ngSubmit)="submit()">
+    <p class="eyebrow">DidiBot</p>
+    <h1>Connexion admin</h1>
+    <p class="muted">Connexion réservée aux comptes acceptés.</p>
+
+    @if (error()) {
+      <p class="banner error">{{ error() }}</p>
+    }
+
+    <label>
+      Utilisateur
+      <input formControlName="username" autocomplete="username" />
+    </label>
+
+    <label>
+      Mot de passe
+      <input type="password" formControlName="password" autocomplete="current-password" />
+    </label>
+
+    <button class="btn" type="submit" [disabled]="loading()">
+      {{ loading() ? 'Connexion…' : 'Se connecter' }}
+    </button>
+
+    <a class="link" routerLink="/register">Demander un compte</a>
+    <a class="link" routerLink="/propose">Proposer un trigger sans compte</a>
+  </form>
+</div>
