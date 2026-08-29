@@ -91,7 +91,14 @@ nav a.active .nav-badge {
 }
 
 .content {
+  min-width: 0;
   padding: 2rem 2.25rem 3rem;
+}
+
+.content > *:not(router-outlet) {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .sidebar-foot {

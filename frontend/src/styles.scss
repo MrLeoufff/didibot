@@ -41,6 +41,19 @@ body {
   background-attachment: fixed;
 }
 
+app-shell,
+app-dashboard,
+app-trigger-list,
+app-trigger-form,
+app-logs,
+app-servers,
+app-user-list,
+app-propose {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
 h1,
 h2,
 h3 {
@@ -58,8 +71,13 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: end;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.page-header .btn {
+  flex-shrink: 0;
 }
 
 .eyebrow {
